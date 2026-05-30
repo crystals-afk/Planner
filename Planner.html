@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Studio">
+<meta name="theme-color" content="#F4EFE3">
+<title>Studio — Planner</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%239B3322'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23F4EFE3' font-family='serif'>&#21360;</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%239B3322'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23F4EFE3' font-family='serif'>&#21360;</text></svg>">
+</head>
+<body>
+<!-- OPTIONAL for advanced users: you can hardcode credentials here instead of
+     typing them into the app's setup screen. Most people can ignore this. -->
+<script>
+  window.STUDIO_CONFIG = { url: "", anonKey: "" };
+</script>
+<div id="root"></div>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+  // app.jsx
+  var { useState, useEffect, useMemo, useRef, useCallback } = React;
+  var CFG_KEY = "studio:supabase:v1";
+  function readConfig() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(CFG_KEY) || "null");
+      if (saved && saved.url && saved.anonKey) return saved;
+    } catch (e) {
+    }
+    const w = window.STUDIO_CONFIG;
+    if (w && w.url && w.anonKey) return { url: w.url, anonKey: w.anonKey };
+    return null;
+  }
+  function normalizeUrl(u) {
+    let s = (u || "").trim();
+    s = s.replace(/\/rest\/v1\/?$/i, "");
+    s = s.replace(/\/+$/, "");
+    if (s && !/^https?:\/\//i.test(s)) s = "https://" + s;
+    return s;
+  }
+  var CONFIG = readConfig();
+  var CONFIGURED = !!(CONFIG && CONFIG.url.indexOf("supabase.co") !== -1 && CONFIG.anonKey.length > 20);
+  var sb = CONFIGURED ? window.supabase.createClient(normalizeUrl(CONFIG.url), CONFIG.anonKey) : null;
+  var Svg = ({ size = 16, strokeWidth = 1.8, className, children }) => /* @__PURE__ */ React.createElement(
+    "svg",
+    {
+      width: size,
+      height: size,
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth,
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      className
+    },
+    children
+  );
+  var LayoutGrid = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "3", width: "7", height: "7", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "14", y: "3", width: "7", height: "7", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "14", y: "14", width: "7", height: "7", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "3", y: "14", width: "7", height: "7", rx: "1" }));
+  var Target = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "9" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "5" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "1" }));
+  var CalendarRange = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "4", width: "18", height: "17", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M3 9h18M8 2v4M16 2v4M7 14h4M13 17h4" }));
+  var CalendarDays = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "4", width: "18", height: "17", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M3 9h18M8 2v4M16 2v4M7 13h.01M12 13h.01M17 13h.01M7 17h.01M12 17h.01M17 17h.01" }));
+  var Layers = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M12 2l9 5-9 5-9-5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5" }));
+  var ChevronDown = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M6 9l6 6 6-6" }));
+  var ListChecks = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M3 5l2 2 3-3M3 12l2 2 3-3M3 19l2 2 3-3M11 5h10M11 12h10M11 19h10" }));
+  var GitBranch = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "3", x2: "6", y2: "15" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "6", r: "3" }), /* @__PURE__ */ React.createElement("circle", { cx: "6", cy: "18", r: "3" }), /* @__PURE__ */ React.createElement("path", { d: "M18 9a9 9 0 0 1-9 9" }));
+  var Scale = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M12 3v18M7 21h10M5 7h14M5 7l-3 6a3 3 0 0 0 6 0zM19 7l-3 6a3 3 0 0 0 6 0z" }));
+  var NotebookPen = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M3 4h11v16H3zM3 9h11M7 4v16" }), /* @__PURE__ */ React.createElement("path", { d: "M17 5l4 4-7 7-4 1 1-4z" }));
+  var Plus = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M12 5v14M5 12h14" }));
+  var X = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M18 6L6 18M6 6l12 12" }));
+  var Check = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M20 6L9 17l-5-5" }));
+  var Trash2 = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" }));
+  var Link2 = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M9 17H7A5 5 0 0 1 7 7h2M15 7h2a5 5 0 0 1 0 10h-2M8 12h8" }));
+  var ChevronRight = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M9 6l6 6-6 6" }));
+  var RefreshCw = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5" }));
+  var Circle = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "9" }));
+  var CircleDot = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "9" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "3.4", fill: "currentColor", stroke: "none" }));
+  var CheckCircle2 = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "9" }), /* @__PURE__ */ React.createElement("path", { d: "M8.5 12.5l2.4 2.4 4.6-5" }));
+  var LogOut = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" }));
+  var uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+  var todayISO = () => (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+  var fmt = (iso) => {
+    if (!iso) return "\u2014";
+    return (/* @__PURE__ */ new Date(iso + "T00:00:00")).toLocaleDateString(void 0, { month: "short", day: "numeric" });
+  };
+  var fmtLong = (iso) => {
+    if (!iso) return "\u2014";
+    return (/* @__PURE__ */ new Date(iso + "T00:00:00")).toLocaleDateString(void 0, { month: "short", day: "numeric", year: "numeric" });
+  };
+  var daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 864e5);
+  var STATUSES = [
+    { id: "todo", label: "Not started", icon: Circle },
+    { id: "doing", label: "In progress", icon: CircleDot },
+    { id: "done", label: "Done", icon: CheckCircle2 }
+  ];
+  var statusMeta = (s) => STATUSES.find((x) => x.id === s) || STATUSES[0];
+  var emptyData = () => ({ projects: [], quarters: [], weeks: [], days: [], decisions: [], reflections: [] });
+  function Root() {
+    const [session, setSession] = useState(null);
+    const [ready, setReady] = useState(false);
+    useEffect(() => {
+      if (!sb) {
+        setReady(true);
+        return;
+      }
+      sb.auth.getSession().then(({ data }) => {
+        setSession(data.session);
+        setReady(true);
+      });
+      const { data: sub } = sb.auth.onAuthStateChange((_e, s) => setSession(s));
+      return () => sub.subscription.unsubscribe();
+    }, []);
+    if (!CONFIGURED) return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Style, null), /* @__PURE__ */ React.createElement(ConfigNeeded, null));
+    if (!ready) return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Style, null), /* @__PURE__ */ React.createElement("div", { className: "splash" }, "Loading\u2026"));
+    if (!session) return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Style, null), /* @__PURE__ */ React.createElement(Auth, null));
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Style, null), /* @__PURE__ */ React.createElement(Planner, { session }));
+  }
+  function ConfigNeeded() {
+    const [url, setUrl] = useState("");
+    const [key, setKey] = useState("");
+    const [err, setErr] = useState(null);
+    const save = () => {
+      const u = normalizeUrl(url);
+      const k = key.trim();
+      if (u.indexOf("supabase.co") === -1) {
+        setErr("That doesn't look like a Project URL \u2014 it should contain \u201Csupabase.co\u201D.");
+        return;
+      }
+      if (k.length < 20) {
+        setErr("That anon/public key looks too short \u2014 paste the long key (starts with eyJ\u2026 or sb_publishable_\u2026).");
+        return;
+      }
+      try {
+        localStorage.setItem(CFG_KEY, JSON.stringify({ url: u, anonKey: k }));
+        window.location.reload();
+      } catch (e) {
+        setErr("Couldn't save in this browser. If you're in Private Browsing, switch to a normal tab and try again.");
+      }
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "auth-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "auth-card setup-card" }, /* @__PURE__ */ React.createElement("div", { className: "seal" }, "\u5370"), /* @__PURE__ */ React.createElement("h1", { className: "auth-title" }, "Connect your data"), /* @__PURE__ */ React.createElement("p", { className: "auth-sub" }, "Paste the two values from your Supabase project. They're saved on this device only \u2014 you do this once per device."), /* @__PURE__ */ React.createElement("div", { className: "form", onKeyDown: (e) => {
+      if (e.key === "Enter") save();
+    } }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Project URL"), /* @__PURE__ */ React.createElement("input", { value: url, onChange: (e) => setUrl(e.target.value), placeholder: "https://abcd1234.supabase.co", autoCapitalize: "off", autoCorrect: "off", spellCheck: "false" })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "anon / public key"), /* @__PURE__ */ React.createElement("textarea", { rows: 3, value: key, onChange: (e) => setKey(e.target.value), placeholder: "eyJhbGci\u2026  (the long one \u2014 not service_role)", autoCapitalize: "off", autoCorrect: "off", spellCheck: "false" }))), err && /* @__PURE__ */ React.createElement("div", { className: "auth-err" }, err), /* @__PURE__ */ React.createElement("button", { className: "btn primary full", onClick: save, disabled: !url || !key }, "Save & connect"), /* @__PURE__ */ React.createElement("p", { className: "setup-foot" }, "Need a project first? Open ", /* @__PURE__ */ React.createElement("b", null, "supabase.com"), ", create a free project, run the SQL from the setup guide, then come back here. Full walkthrough is in ", /* @__PURE__ */ React.createElement("b", null, "SETUP.md"), ".")));
+  }
+  function Auth() {
+    const [mode, setMode] = useState("signin");
+    const [email, setEmail] = useState("");
+    const [pw, setPw] = useState("");
+    const [busy, setBusy] = useState(false);
+    const [msg, setMsg] = useState(null);
+    const [err, setErr] = useState(null);
+    const submit = async () => {
+      setErr(null);
+      setMsg(null);
+      setBusy(true);
+      try {
+        if (mode === "signup") {
+          const { data, error } = await sb.auth.signUp({ email, password: pw });
+          if (error) throw error;
+          if (!data.session) setMsg("Account created. If email confirmation is on, check your inbox, then sign in.");
+        } else {
+          const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+          if (error) throw error;
+        }
+      } catch (e) {
+        setErr(e.message || "Something went wrong.");
+      }
+      setBusy(false);
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "auth-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "auth-card" }, /* @__PURE__ */ React.createElement("div", { className: "seal" }, "\u5370"), /* @__PURE__ */ React.createElement("h1", { className: "auth-title" }, "Studio"), /* @__PURE__ */ React.createElement("p", { className: "auth-sub" }, mode === "signin" ? "Welcome back." : "Create your account."), /* @__PURE__ */ React.createElement("div", { className: "form", onKeyDown: (e) => {
+      if (e.key === "Enter") submit();
+    } }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Email"), /* @__PURE__ */ React.createElement("input", { type: "email", value: email, onChange: (e) => setEmail(e.target.value), autoFocus: true })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Password"), /* @__PURE__ */ React.createElement("input", { type: "password", value: pw, onChange: (e) => setPw(e.target.value) }))), err && /* @__PURE__ */ React.createElement("div", { className: "auth-err" }, err), msg && /* @__PURE__ */ React.createElement("div", { className: "auth-msg" }, msg), /* @__PURE__ */ React.createElement("button", { className: "btn primary full", disabled: busy || !email || pw.length < 6, onClick: submit }, busy ? "\u2026" : mode === "signin" ? "Sign in" : "Create account"), /* @__PURE__ */ React.createElement("button", { className: "text-link center", onClick: () => {
+      setMode(mode === "signin" ? "signup" : "signin");
+      setErr(null);
+      setMsg(null);
+    } }, mode === "signin" ? "Need an account? Sign up" : "Have an account? Sign in")));
+  }
+  function Planner({ session }) {
+    const userId = session.user.id;
+    const [data, setData] = useState(emptyData());
+    const [view, setView] = useState("dashboard");
+    const [loaded, setLoaded] = useState(false);
+    const [sync, setSync] = useState("idle");
+    const localStamp = useRef(0);
+    const saveTimer = useRef(null);
+    const load = useCallback(async (silent) => {
+      if (!silent) setSync("loading");
+      try {
+        const { data: row, error } = await sb.from("planner_data").select("data,updated_at").eq("user_id", userId).maybeSingle();
+        if (!error && row && row.data) {
+          const remoteStamp = Date.parse(row.updated_at) || 0;
+          if (remoteStamp >= localStamp.current) {
+            localStamp.current = remoteStamp;
+            setData({ ...emptyData(), ...row.data });
+          }
+        }
+      } catch (e) {
+      }
+      setLoaded(true);
+      if (!silent) setSync("idle");
+    }, [userId]);
+    useEffect(() => {
+      load(false);
+    }, [load]);
+    useEffect(() => {
+      const onVis = () => {
+        if (document.visibilityState === "visible") load(true);
+      };
+      window.addEventListener("visibilitychange", onVis);
+      window.addEventListener("focus", onVis);
+      return () => {
+        window.removeEventListener("visibilitychange", onVis);
+        window.removeEventListener("focus", onVis);
+      };
+    }, [load]);
+    const persist = useCallback((next) => {
+      const stamp = Date.now();
+      localStamp.current = stamp;
+      setSync("saving");
+      clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(async () => {
+        try {
+          await sb.from("planner_data").upsert({ user_id: userId, data: next, updated_at: new Date(stamp).toISOString() });
+          setSync("saved");
+          setTimeout(() => setSync("idle"), 1200);
+        } catch (e) {
+          setSync("idle");
+        }
+      }, 500);
+    }, [userId]);
+    const update = useCallback((fn) => {
+      setData((prev) => {
+        const next = fn(structuredClone(prev));
+        persist(next);
+        return next;
+      });
+    }, [persist]);
+    const nav = [
+      { id: "dashboard", label: "Today", icon: LayoutGrid },
+      { id: "projects", label: "Projects", icon: Layers },
+      { id: "calendar", label: "Calendar", icon: CalendarDays },
+      { id: "quarters", label: "Quarters", icon: Target },
+      { id: "weeks", label: "Weekly", icon: CalendarRange },
+      { id: "days", label: "Daily", icon: ListChecks },
+      { id: "gantt", label: "Gantt", icon: GitBranch },
+      { id: "decisions", label: "Decisions", icon: Scale },
+      { id: "reflections", label: "Reflect", icon: NotebookPen }
+    ];
+    return /* @__PURE__ */ React.createElement("div", { className: "root" }, /* @__PURE__ */ React.createElement("aside", { className: "sidebar" }, /* @__PURE__ */ React.createElement("div", { className: "brand" }, /* @__PURE__ */ React.createElement("span", { className: "seal" }, "\u5370"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "brand-title" }, "Studio"), /* @__PURE__ */ React.createElement("div", { className: "brand-sub" }, "planner & ledger"))), /* @__PURE__ */ React.createElement("nav", { className: "side-nav" }, nav.map((n) => /* @__PURE__ */ React.createElement("button", { key: n.id, className: "side-link" + (view === n.id ? " active" : ""), onClick: () => setView(n.id) }, /* @__PURE__ */ React.createElement(n.icon, { size: 17, strokeWidth: 1.8 }), /* @__PURE__ */ React.createElement("span", null, n.label)))), /* @__PURE__ */ React.createElement("div", { className: "side-foot" }, /* @__PURE__ */ React.createElement(SyncPill, { sync, onSync: () => load(false) }), /* @__PURE__ */ React.createElement("button", { className: "side-out", onClick: () => sb.auth.signOut(), title: "Sign out" }, /* @__PURE__ */ React.createElement(LogOut, { size: 16 })))), /* @__PURE__ */ React.createElement("main", { className: "main" }, /* @__PURE__ */ React.createElement("header", { className: "topbar" }, /* @__PURE__ */ React.createElement("div", { className: "topbar-title" }, nav.find((n) => n.id === view)?.label), /* @__PURE__ */ React.createElement("div", { className: "topbar-right" }, /* @__PURE__ */ React.createElement(SyncPill, { sync, onSync: () => load(false), compact: true }), /* @__PURE__ */ React.createElement("button", { className: "icon-btn", onClick: () => sb.auth.signOut() }, /* @__PURE__ */ React.createElement(LogOut, { size: 17 })))), /* @__PURE__ */ React.createElement("div", { className: "canvas" }, !loaded ? /* @__PURE__ */ React.createElement("div", { className: "empty" }, "Opening your studio\u2026") : /* @__PURE__ */ React.createElement(React.Fragment, null, view === "dashboard" && /* @__PURE__ */ React.createElement(Dashboard, { data, update, setView }), view === "projects" && /* @__PURE__ */ React.createElement(Projects, { data, update }), view === "calendar" && /* @__PURE__ */ React.createElement(CalendarView, { data, update }), view === "quarters" && /* @__PURE__ */ React.createElement(Quarters, { data, update }), view === "weeks" && /* @__PURE__ */ React.createElement(Weeks, { data, update }), view === "days" && /* @__PURE__ */ React.createElement(Days, { data, update }), view === "gantt" && /* @__PURE__ */ React.createElement(Gantt, { data }), view === "decisions" && /* @__PURE__ */ React.createElement(Decisions, { data, update }), view === "reflections" && /* @__PURE__ */ React.createElement(Reflections, { data, update })))), /* @__PURE__ */ React.createElement("nav", { className: "botnav" }, nav.map((n) => /* @__PURE__ */ React.createElement("button", { key: n.id, className: "bot-link" + (view === n.id ? " active" : ""), onClick: () => setView(n.id) }, /* @__PURE__ */ React.createElement(n.icon, { size: 19, strokeWidth: 1.8 }), /* @__PURE__ */ React.createElement("span", null, n.label)))));
+  }
+  function SyncPill({ sync, onSync, compact }) {
+    const text = sync === "saving" ? "Saving\u2026" : sync === "saved" ? "Saved" : sync === "loading" ? "Syncing\u2026" : "Synced";
+    return /* @__PURE__ */ React.createElement("button", { className: "sync-pill" + (compact ? " compact" : ""), onClick: onSync, title: "Sync now" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 13, strokeWidth: 2, className: sync === "loading" || sync === "saving" ? "spin" : "" }), !compact && /* @__PURE__ */ React.createElement("span", null, text));
+  }
+  function StatusButton({ value, onChange }) {
+    const order = ["todo", "doing", "done"];
+    const m = statusMeta(value);
+    const Icon = m.icon;
+    return /* @__PURE__ */ React.createElement("button", { className: "status-btn s-" + value, onClick: () => onChange(order[(order.indexOf(value) + 1) % order.length]), title: m.label }, /* @__PURE__ */ React.createElement(Icon, { size: 15, strokeWidth: 2 }));
+  }
+  function Tag({ children, tone }) {
+    return /* @__PURE__ */ React.createElement("span", { className: "tag" + (tone ? " t-" + tone : "") }, children);
+  }
+  function SectionHead({ title, subtitle, action }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "sec-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", null, title), subtitle && /* @__PURE__ */ React.createElement("p", { className: "sec-sub" }, subtitle)), action);
+  }
+  function Empty({ children }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "empty-card" }, children);
+  }
+  function Modal({ title, onClose, children, wide }) {
+    return /* @__PURE__ */ React.createElement("div", { className: "modal-scrim", onMouseDown: onClose }, /* @__PURE__ */ React.createElement("div", { className: "modal" + (wide ? " wide" : ""), onMouseDown: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "modal-head" }, /* @__PURE__ */ React.createElement("h3", null, title), /* @__PURE__ */ React.createElement("button", { className: "icon-btn", onClick: onClose }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("div", { className: "modal-body" }, children)));
+  }
+  function LinkPicker({ data, links, onChange }) {
+    const pool = [
+      ...data.quarters.map((q) => ({ type: "quarter", id: q.id, label: q.title, kind: "Quarter" })),
+      ...data.weeks.map((w) => ({ type: "week", id: w.id, label: w.title, kind: "Weekly" })),
+      ...data.days.map((d) => ({ type: "day", id: d.id, label: d.title, kind: "Daily" })),
+      ...data.decisions.map((d) => ({ type: "decision", id: d.id, label: d.title, kind: "Decision" }))
+    ];
+    const has = (t, id) => links.some((l) => l.type === t && l.id === id);
+    const toggle = (t, id) => {
+      if (has(t, id)) onChange(links.filter((l) => !(l.type === t && l.id === id)));
+      else onChange([...links, { type: t, id }]);
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "linkpicker" }, pool.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "muted" }, "Nothing to link yet \u2014 add tasks or decisions first."), pool.map((p) => /* @__PURE__ */ React.createElement("button", { key: p.type + p.id, className: "link-chip" + (has(p.type, p.id) ? " on" : ""), onClick: () => toggle(p.type, p.id) }, /* @__PURE__ */ React.createElement(Tag, { tone: p.type }, p.kind), /* @__PURE__ */ React.createElement("span", { className: "link-chip-label" }, p.label || "Untitled"), has(p.type, p.id) && /* @__PURE__ */ React.createElement(Check, { size: 13 }))));
+  }
+  function LinkBadges({ data, links }) {
+    if (!links || !links.length) return null;
+    const label = (l) => {
+      const map = { quarter: "quarters", week: "weeks", day: "days", decision: "decisions" };
+      const arr = data[map[l.type]] || [];
+      const item = arr.find((x) => x.id === l.id);
+      return item ? item.title || "Untitled" : null;
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "link-badges" }, links.map((l, i) => {
+      const t = label(l);
+      if (!t) return null;
+      return /* @__PURE__ */ React.createElement("span", { key: i, className: "link-badge" }, /* @__PURE__ */ React.createElement(Link2, { size: 11 }), t);
+    }));
+  }
+  function Dashboard({ data, update, setView }) {
+    const today = todayISO();
+    const todays = data.days.filter((d) => d.date === today);
+    const activeQuarters = data.quarters.filter((q) => q.status !== "done");
+    const now = new Date(today);
+    const thisWeek = data.weeks.filter((w) => w.startDate && w.endDate && new Date(w.startDate) <= now && now <= new Date(w.endDate));
+    const recentDec = [...data.decisions].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 3);
+    const recentRef = [...data.reflections].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 2);
+    const greeting = (() => {
+      const h = (/* @__PURE__ */ new Date()).getHours();
+      return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+    })();
+    return /* @__PURE__ */ React.createElement("div", { className: "dash" }, /* @__PURE__ */ React.createElement("div", { className: "dash-hero" }, /* @__PURE__ */ React.createElement("p", { className: "dash-date" }, (/* @__PURE__ */ new Date()).toLocaleDateString(void 0, { weekday: "long", month: "long", day: "numeric" })), /* @__PURE__ */ React.createElement("h1", null, greeting, ".")), /* @__PURE__ */ React.createElement("div", { className: "dash-grid" }, /* @__PURE__ */ React.createElement("div", { className: "card span-2" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Today", subtitle: `${todays.filter((t) => t.status === "done").length}/${todays.length} complete` }), todays.length === 0 ? /* @__PURE__ */ React.createElement(Empty, null, "No tasks scheduled for today. ", /* @__PURE__ */ React.createElement("button", { className: "text-link", onClick: () => setView("days") }, "Plan your day \u2192")) : /* @__PURE__ */ React.createElement("ul", { className: "mini-list" }, todays.map((d) => /* @__PURE__ */ React.createElement("li", { key: d.id, className: d.status === "done" ? "done" : "" }, /* @__PURE__ */ React.createElement(StatusButton, { value: d.status, onChange: (s) => update((dt) => {
+      dt.days.find((x) => x.id === d.id).status = s;
+      return dt;
+    }) }), /* @__PURE__ */ React.createElement("span", { className: "mini-title" }, d.title), d.priority === "high" && /* @__PURE__ */ React.createElement(Tag, { tone: "seal" }, "priority"))))), /* @__PURE__ */ React.createElement("div", { className: "card" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "This week" }), thisWeek.length === 0 ? /* @__PURE__ */ React.createElement(Empty, null, "No weekly task spans today.") : /* @__PURE__ */ React.createElement("ul", { className: "mini-list" }, thisWeek.map((w) => /* @__PURE__ */ React.createElement("li", { key: w.id }, /* @__PURE__ */ React.createElement(StatusButton, { value: w.status, onChange: (s) => update((dt) => {
+      dt.weeks.find((x) => x.id === w.id).status = s;
+      return dt;
+    }) }), /* @__PURE__ */ React.createElement("span", { className: "mini-title" }, w.title))))), /* @__PURE__ */ React.createElement("div", { className: "card" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Quarter goals" }), activeQuarters.length === 0 ? /* @__PURE__ */ React.createElement(Empty, null, "Set a quarterly goal to anchor the rest. ", /* @__PURE__ */ React.createElement("button", { className: "text-link", onClick: () => setView("quarters") }, "Add \u2192")) : /* @__PURE__ */ React.createElement("ul", { className: "mini-list" }, activeQuarters.map((q) => {
+      const lw = data.weeks.filter((w) => w.quarterId === q.id);
+      const dw = lw.filter((w) => w.status === "done").length;
+      return /* @__PURE__ */ React.createElement("li", { key: q.id, className: "goal-row" }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: q.color || "var(--seal)" } }), /* @__PURE__ */ React.createElement("span", { className: "mini-title" }, q.title), lw.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "muted small" }, dw, "/", lw.length));
+    }))), /* @__PURE__ */ React.createElement("div", { className: "card" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Recent decisions" }), recentDec.length === 0 ? /* @__PURE__ */ React.createElement(Empty, null, "No decisions logged yet.") : /* @__PURE__ */ React.createElement("ul", { className: "mini-list" }, recentDec.map((d) => /* @__PURE__ */ React.createElement("li", { key: d.id }, /* @__PURE__ */ React.createElement(Scale, { size: 14, className: "muted-icon" }), /* @__PURE__ */ React.createElement("span", { className: "mini-title" }, d.title), /* @__PURE__ */ React.createElement("span", { className: "muted small" }, fmt(d.date)))))), /* @__PURE__ */ React.createElement("div", { className: "card" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Latest reflections" }), recentRef.length === 0 ? /* @__PURE__ */ React.createElement(Empty, null, "Nothing written yet.") : /* @__PURE__ */ React.createElement("ul", { className: "mini-list" }, recentRef.map((r) => /* @__PURE__ */ React.createElement("li", { key: r.id }, /* @__PURE__ */ React.createElement(NotebookPen, { size: 14, className: "muted-icon" }), /* @__PURE__ */ React.createElement("span", { className: "mini-title" }, r.title || "Reflection"), /* @__PURE__ */ React.createElement("span", { className: "muted small" }, fmt(r.date))))))));
+  }
+  var QCOLORS = ["#9B3322", "#7C9070", "#B08D4F", "#4A6C8C", "#7A5C84", "#3F6F63"];
+  var DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  function addDaysISO(iso, n) {
+    const d = /* @__PURE__ */ new Date(iso + "T00:00:00");
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+  function monthStart(iso) {
+    const d = /* @__PURE__ */ new Date(iso + "T00:00:00");
+    d.setDate(1);
+    return d.toISOString().slice(0, 10);
+  }
+  function gridStart(monthFirst) {
+    const d = /* @__PURE__ */ new Date(monthFirst + "T00:00:00");
+    const back = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - back);
+    return d.toISOString().slice(0, 10);
+  }
+  var PCOLORS = ["#9B3322", "#4A6C8C", "#7C9070", "#B08D4F", "#7A5C84", "#3F6F63", "#A8552F", "#5C6B7A"];
+  function quarterById(data, id) {
+    return data.quarters.find((q) => q.id === id);
+  }
+  function effProjectOfQuarter(q) {
+    return q ? q.projectId || null : null;
+  }
+  function effProjectOfWeek(data, w) {
+    if (!w) return null;
+    if (w.projectId) return w.projectId;
+    if (w.quarterId) return effProjectOfQuarter(quarterById(data, w.quarterId));
+    return null;
+  }
+  function QuarterProjectSelect({ data, value, onChange }) {
+    return /* @__PURE__ */ React.createElement("select", { value: value || "", onChange: (e) => onChange(e.target.value || null) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 no project \u2014"), data.projects.map((p) => /* @__PURE__ */ React.createElement("option", { key: p.id, value: p.id }, p.title || "Untitled project")));
+  }
+  function WeekParentSelect({ data, value, onChange }) {
+    const v = value.quarterId ? "q:" + value.quarterId : value.projectId ? "p:" + value.projectId : "";
+    return /* @__PURE__ */ React.createElement("select", { value: v, onChange: (e) => {
+      const val = e.target.value;
+      if (!val) onChange({ quarterId: null, projectId: null });
+      else if (val[0] === "q") onChange({ quarterId: val.slice(2), projectId: null });
+      else onChange({ projectId: val.slice(2), quarterId: null });
+    } }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 none \u2014"), data.quarters.length > 0 && /* @__PURE__ */ React.createElement("optgroup", { label: "Under a quarterly goal" }, data.quarters.map((q) => /* @__PURE__ */ React.createElement("option", { key: q.id, value: "q:" + q.id }, q.title || "Untitled"))), data.projects.length > 0 && /* @__PURE__ */ React.createElement("optgroup", { label: "Directly under a project" }, data.projects.map((p) => /* @__PURE__ */ React.createElement("option", { key: p.id, value: "p:" + p.id }, p.title || "Untitled"))));
+  }
+  function DayParentSelect({ data, value, onChange }) {
+    const v = value.weekId ? "w:" + value.weekId : value.projectId ? "p:" + value.projectId : "";
+    return /* @__PURE__ */ React.createElement("select", { value: v, onChange: (e) => {
+      const val = e.target.value;
+      if (!val) onChange({ weekId: null, projectId: null });
+      else if (val[0] === "w") onChange({ weekId: val.slice(2), projectId: null });
+      else onChange({ projectId: val.slice(2), weekId: null });
+    } }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 none \u2014"), data.weeks.length > 0 && /* @__PURE__ */ React.createElement("optgroup", { label: "Under a weekly task" }, data.weeks.map((w) => /* @__PURE__ */ React.createElement("option", { key: w.id, value: "w:" + w.id }, w.title || "Untitled"))), data.projects.length > 0 && /* @__PURE__ */ React.createElement("optgroup", { label: "Directly under a project" }, data.projects.map((p) => /* @__PURE__ */ React.createElement("option", { key: p.id, value: "p:" + p.id }, p.title || "Untitled"))));
+  }
+  function Projects({ data, update }) {
+    const [editingProject, setEditingProject] = useState(null);
+    const [editingTask, setEditingTask] = useState(null);
+    const [addForProject, setAddForProject] = useState(null);
+    const [open, setOpen] = useState({});
+    const saveProject = (p) => {
+      update((dt) => {
+        const i = dt.projects.findIndex((x) => x.id === p.id);
+        if (i >= 0) dt.projects[i] = p;
+        else dt.projects.push(p);
+        return dt;
+      });
+      setEditingProject(null);
+    };
+    const delProject = (id) => update((dt) => {
+      dt.projects = dt.projects.filter((x) => x.id !== id);
+      dt.quarters.forEach((q) => {
+        if (q.projectId === id) q.projectId = null;
+      });
+      dt.weeks.forEach((w) => {
+        if (w.projectId === id) w.projectId = null;
+      });
+      dt.days.forEach((d) => {
+        if (d.projectId === id) d.projectId = null;
+      });
+      return dt;
+    });
+    const saveTask = (kind, item) => {
+      update((dt) => {
+        const arr = kind === "quarter" ? dt.quarters : kind === "week" ? dt.weeks : dt.days;
+        const i = arr.findIndex((x) => x.id === item.id);
+        if (i >= 0) arr[i] = item;
+        else arr.push(item);
+        return dt;
+      });
+      setEditingTask(null);
+    };
+    const delTask = (kind, id) => update((dt) => {
+      if (kind === "quarter") {
+        dt.quarters = dt.quarters.filter((x) => x.id !== id);
+        dt.weeks.forEach((w) => {
+          if (w.quarterId === id) w.quarterId = null;
+        });
+      } else if (kind === "week") {
+        dt.weeks = dt.weeks.filter((x) => x.id !== id);
+        dt.days.forEach((d) => {
+          if (d.weekId === id) d.weekId = null;
+        });
+      } else dt.days = dt.days.filter((x) => x.id !== id);
+      return dt;
+    });
+    const newProject = () => ({ id: uid(), title: "", description: "", color: PCOLORS[data.projects.length % PCOLORS.length], status: "todo" });
+    const newUnder = (kind, projectId) => {
+      if (kind === "quarter") return { id: uid(), title: "", description: "", startDate: todayISO(), endDate: addDaysISO(todayISO(), 90), status: "todo", color: QCOLORS[data.quarters.length % QCOLORS.length], projectId };
+      if (kind === "week") return { id: uid(), title: "", quarterId: null, projectId, startDate: todayISO(), endDate: addDaysISO(todayISO(), 6), status: "todo", notes: "" };
+      return { id: uid(), title: "", weekId: null, projectId, date: todayISO(), status: "todo", priority: "normal" };
+    };
+    const descendants = (pid) => {
+      const qs = data.quarters.filter((q) => q.projectId === pid);
+      const directWeeks = data.weeks.filter((w) => w.projectId === pid && !w.quarterId);
+      const directDays = data.days.filter((d) => d.projectId === pid && !d.weekId);
+      const all = [];
+      qs.forEach((q) => {
+        all.push(q);
+        data.weeks.filter((w) => w.quarterId === q.id).forEach((w) => {
+          all.push(w);
+          data.days.filter((d) => d.weekId === w.id).forEach((d) => all.push(d));
+        });
+      });
+      directWeeks.forEach((w) => {
+        all.push(w);
+        data.days.filter((d) => d.weekId === w.id).forEach((d) => all.push(d));
+      });
+      directDays.forEach((d) => all.push(d));
+      return { qs, directWeeks, directDays, all };
+    };
+    const spanOf = (items) => {
+      const starts = [], ends = [];
+      items.forEach((it) => {
+        const s = it.date || it.startDate;
+        const e = it.date || it.endDate;
+        if (s) starts.push(s);
+        if (e) ends.push(e);
+      });
+      if (!starts.length) return null;
+      return { start: starts.reduce((a, b) => a < b ? a : b), end: ends.reduce((a, b) => a > b ? a : b) };
+    };
+    const TaskRow = ({ item, kind, depth }) => /* @__PURE__ */ React.createElement("div", { className: "pj-row d" + depth, onClick: () => setEditingTask({ kind, item }) }, /* @__PURE__ */ React.createElement(StatusDot, { status: item.status }), /* @__PURE__ */ React.createElement("span", { className: "pj-row-title" + (item.status === "done" ? " struck" : "") }, item.title || "Untitled"), /* @__PURE__ */ React.createElement(Tag, { tone: kind === "quarter" ? "quarter" : kind === "week" ? "week" : "day" }, kind === "quarter" ? "Q" : kind === "week" ? "W" : "D"));
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
+      SectionHead,
+      {
+        title: "Projects",
+        subtitle: "Umbrella for everything. Quarters, weekly and daily tasks can all live under a project.",
+        action: /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => setEditingProject(newProject()) }, /* @__PURE__ */ React.createElement(Plus, { size: 16 }), "New project")
+      }
+    ), data.projects.length === 0 && /* @__PURE__ */ React.createElement(Empty, null, "No projects yet. A project is the top-level umbrella \u2014 create one, then assign quarters, weekly or daily tasks to it."), /* @__PURE__ */ React.createElement("div", { className: "pj-list" }, data.projects.map((p) => {
+      const { qs, directWeeks, directDays, all } = descendants(p.id);
+      const done = all.filter((x) => x.status === "done").length;
+      const pct = all.length ? Math.round(done / all.length * 100) : p.status === "done" ? 100 : 0;
+      const span = spanOf(all);
+      const isOpen = open[p.id] !== false;
+      return /* @__PURE__ */ React.createElement("div", { key: p.id, className: "pj-card", style: { borderTopColor: p.color } }, /* @__PURE__ */ React.createElement("div", { className: "pj-head" }, /* @__PURE__ */ React.createElement("button", { className: "pj-toggle", onClick: () => setOpen({ ...open, [p.id]: !isOpen }) }, isOpen ? /* @__PURE__ */ React.createElement(ChevronDown, { size: 18 }) : /* @__PURE__ */ React.createElement(ChevronRight, { size: 18 })), /* @__PURE__ */ React.createElement(StatusButton, { value: p.status, onChange: (s) => update((dt) => {
+        dt.projects.find((x) => x.id === p.id).status = s;
+        return dt;
+      }) }), /* @__PURE__ */ React.createElement("div", { className: "pj-head-main" }, /* @__PURE__ */ React.createElement("h3", { className: "pj-title" }, p.title || "Untitled project"), /* @__PURE__ */ React.createElement("div", { className: "pj-meta" }, all.length, " task", all.length === 1 ? "" : "s", " \xB7 ", pct, "%", span ? ` \xB7 ${fmt(span.start)}\u2013${fmt(span.end)}` : "")), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setEditingProject(p) }, "Edit")), p.description && /* @__PURE__ */ React.createElement("p", { className: "pj-desc" }, p.description), /* @__PURE__ */ React.createElement("div", { className: "progress" }, /* @__PURE__ */ React.createElement("div", { className: "progress-fill", style: { width: pct + "%", background: p.color } })), isOpen && /* @__PURE__ */ React.createElement("div", { className: "pj-tree" }, all.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "pj-empty" }, "Nothing assigned yet."), qs.map((q) => /* @__PURE__ */ React.createElement("div", { key: q.id }, /* @__PURE__ */ React.createElement(TaskRow, { item: q, kind: "quarter", depth: 0 }), data.weeks.filter((w) => w.quarterId === q.id).map((w) => /* @__PURE__ */ React.createElement("div", { key: w.id }, /* @__PURE__ */ React.createElement(TaskRow, { item: w, kind: "week", depth: 1 }), data.days.filter((d) => d.weekId === w.id).map((d) => /* @__PURE__ */ React.createElement(TaskRow, { key: d.id, item: d, kind: "day", depth: 2 })))))), directWeeks.map((w) => /* @__PURE__ */ React.createElement("div", { key: w.id }, /* @__PURE__ */ React.createElement(TaskRow, { item: w, kind: "week", depth: 0 }), data.days.filter((d) => d.weekId === w.id).map((d) => /* @__PURE__ */ React.createElement(TaskRow, { key: d.id, item: d, kind: "day", depth: 1 })))), directDays.map((d) => /* @__PURE__ */ React.createElement(TaskRow, { key: d.id, item: d, kind: "day", depth: 0 })), /* @__PURE__ */ React.createElement("button", { className: "pj-add", onClick: () => setAddForProject(p.id) }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }), "Add to this project")));
+    })), editingProject && /* @__PURE__ */ React.createElement(Modal, { title: data.projects.some((x) => x.id === editingProject.id) ? "Edit project" : "New project", onClose: () => setEditingProject(null) }, /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Project"), /* @__PURE__ */ React.createElement("input", { value: editingProject.title, onChange: (e) => setEditingProject({ ...editingProject, title: e.target.value }), placeholder: "e.g. APOE4 tau-seeding study", autoFocus: true })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Description"), /* @__PURE__ */ React.createElement("textarea", { rows: 3, value: editingProject.description, onChange: (e) => setEditingProject({ ...editingProject, description: e.target.value }), placeholder: "The big picture this umbrella covers" })), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Colour"), /* @__PURE__ */ React.createElement("div", { className: "swatches" }, PCOLORS.map((c) => /* @__PURE__ */ React.createElement("button", { key: c, className: "swatch" + (editingProject.color === c ? " on" : ""), style: { background: c }, onClick: () => setEditingProject({ ...editingProject, color: c }) })))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Status"), /* @__PURE__ */ React.createElement("div", { className: "mood-row" }, STATUSES.map((s) => /* @__PURE__ */ React.createElement("button", { key: s.id, className: "mood-chip" + (editingProject.status === s.id ? " on" : ""), onClick: () => setEditingProject({ ...editingProject, status: s.id }) }, s.label))))), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, data.projects.some((x) => x.id === editingProject.id) && /* @__PURE__ */ React.createElement("button", { className: "btn ghost danger-text", onClick: () => {
+      delProject(editingProject.id);
+      setEditingProject(null);
+    } }, "Delete"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }), /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditingProject(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => saveProject(editingProject), disabled: !editingProject.title.trim() }, "Save"))), addForProject && /* @__PURE__ */ React.createElement(Modal, { title: "Add to project", onClose: () => setAddForProject(null) }, /* @__PURE__ */ React.createElement("div", { className: "add-choices" }, /* @__PURE__ */ React.createElement("button", { className: "add-choice", onClick: () => {
+      setEditingTask({ kind: "quarter", item: newUnder("quarter", addForProject) });
+      setAddForProject(null);
+    } }, /* @__PURE__ */ React.createElement(Target, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Quarterly goal"), /* @__PURE__ */ React.createElement("span", null, "A ~3-month goal under this project"))), /* @__PURE__ */ React.createElement("button", { className: "add-choice", onClick: () => {
+      setEditingTask({ kind: "week", item: newUnder("week", addForProject) });
+      setAddForProject(null);
+    } }, /* @__PURE__ */ React.createElement(CalendarRange, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Weekly task"), /* @__PURE__ */ React.createElement("span", null, "Directly under this project"))), /* @__PURE__ */ React.createElement("button", { className: "add-choice", onClick: () => {
+      setEditingTask({ kind: "day", item: newUnder("day", addForProject) });
+      setAddForProject(null);
+    } }, /* @__PURE__ */ React.createElement(ListChecks, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Daily task"), /* @__PURE__ */ React.createElement("span", null, "Directly under this project"))))), editingTask && /* @__PURE__ */ React.createElement(CalEditor, { data, editing: editingTask, setEditing: setEditingTask, onSave: saveTask, onDelete: delTask }));
+  }
+  function weekStartOf(iso) {
+    const d = /* @__PURE__ */ new Date(iso + "T00:00:00");
+    const back = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - back);
+    return d.toISOString().slice(0, 10);
+  }
+  function CalendarView({ data, update }) {
+    const [mode, setMode] = useState("month");
+    const [cursor, setCursor] = useState(todayISO());
+    const [editing, setEditing] = useState(null);
+    const [addFor, setAddFor] = useState(null);
+    const today = todayISO();
+    const dragRef = useRef(null);
+    const ghostRef = useRef(null);
+    const justDragged = useRef(false);
+    const [dragLabel, setDragLabel] = useState(null);
+    const [dropDate, setDropDate] = useState(null);
+    const moveGhost = (x, y) => {
+      if (ghostRef.current) {
+        ghostRef.current.style.left = x + "px";
+        ghostRef.current.style.top = y + "px";
+      }
+    };
+    const cellDateAt = (x, y) => {
+      const el = document.elementFromPoint(x, y);
+      const c = el && el.closest("[data-date]");
+      return c ? c.getAttribute("data-date") : null;
+    };
+    const onChipDown = (e, task) => {
+      if (e.button === 1 || e.button === 2) return;
+      dragRef.current = { id: task.id, label: task.title || "Untitled", sx: e.clientX, sy: e.clientY, active: false };
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch (_) {
+      }
+    };
+    const onChipMove = (e) => {
+      const d = dragRef.current;
+      if (!d) return;
+      const dx = e.clientX - d.sx, dy = e.clientY - d.sy;
+      if (!d.active && Math.hypot(dx, dy) > 6) {
+        d.active = true;
+        setDragLabel(d.label);
+        document.body.style.userSelect = "none";
+      }
+      if (d.active) {
+        e.preventDefault();
+        moveGhost(e.clientX, e.clientY);
+        setDropDate(cellDateAt(e.clientX, e.clientY));
+      }
+    };
+    const onChipUp = (e, task) => {
+      const d = dragRef.current;
+      dragRef.current = null;
+      document.body.style.userSelect = "";
+      if (d && d.active) {
+        const target = cellDateAt(e.clientX, e.clientY);
+        setDragLabel(null);
+        setDropDate(null);
+        justDragged.current = true;
+        setTimeout(() => {
+          justDragged.current = false;
+        }, 350);
+        if (target && target !== task.date) {
+          update((dt) => {
+            const t = dt.days.find((x) => x.id === task.id);
+            if (t) t.date = target;
+            return dt;
+          });
+        }
+      } else {
+        setEditing({ kind: "day", item: task });
+      }
+    };
+    const DayChip = ({ d, full }) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: (full ? "wk-task" : "cal-chip") + " s-" + d.status,
+        onPointerDown: (e) => onChipDown(e, d),
+        onPointerMove: onChipMove,
+        onPointerUp: (e) => onChipUp(e, d),
+        onClick: (e) => {
+          e.stopPropagation();
+        },
+        title: d.title
+      },
+      full && /* @__PURE__ */ React.createElement("span", { className: "wk-status", onPointerDown: (e) => e.stopPropagation(), onClick: (e) => {
+        e.stopPropagation();
+        update((dt) => {
+          const t = dt.days.find((x) => x.id === d.id);
+          const order = ["todo", "doing", "done"];
+          t.status = order[(order.indexOf(t.status) + 1) % 3];
+          return dt;
+        });
+      } }, statusMeta(d.status).icon({ size: 15, strokeWidth: 2 })),
+      !full && /* @__PURE__ */ React.createElement("span", { className: "cal-chip-dot" }),
+      /* @__PURE__ */ React.createElement("span", { className: "cal-chip-label" }, d.title || "Untitled"),
+      full && d.priority === "high" && /* @__PURE__ */ React.createElement(Tag, { tone: "seal" }, "priority")
+    );
+    const shift = (n) => {
+      const d = /* @__PURE__ */ new Date(cursor + "T00:00:00");
+      if (mode === "month") d.setMonth(d.getMonth() + n);
+      else d.setDate(d.getDate() + n * 7);
+      setCursor(d.toISOString().slice(0, 10));
+    };
+    const save = (kind, item) => {
+      update((dt) => {
+        const arr = kind === "quarter" ? dt.quarters : kind === "week" ? dt.weeks : dt.days;
+        const i = arr.findIndex((x) => x.id === item.id);
+        if (i >= 0) arr[i] = item;
+        else arr.push(item);
+        return dt;
+      });
+      setEditing(null);
+    };
+    const del = (kind, id) => update((dt) => {
+      if (kind === "quarter") {
+        dt.quarters = dt.quarters.filter((x) => x.id !== id);
+        dt.weeks.forEach((w) => {
+          if (w.quarterId === id) w.quarterId = null;
+        });
+      } else if (kind === "week") {
+        dt.weeks = dt.weeks.filter((x) => x.id !== id);
+        dt.days.forEach((d) => {
+          if (d.weekId === id) d.weekId = null;
+        });
+      } else dt.days = dt.days.filter((x) => x.id !== id);
+      return dt;
+    });
+    const newItem = (kind, date) => {
+      if (kind === "quarter") return { id: uid(), title: "", description: "", startDate: date, endDate: addDaysISO(date, 90), status: "todo", color: QCOLORS[data.quarters.length % QCOLORS.length] };
+      if (kind === "week") return { id: uid(), title: "", quarterId: data.quarters[0]?.id || null, startDate: date, endDate: addDaysISO(date, 6), status: "todo", notes: "" };
+      return { id: uid(), title: "", weekId: null, date, status: "todo", priority: "normal" };
+    };
+    const colOf = (iso, row) => Math.max(0, Math.min(6, daysBetween(row[0], iso)));
+    const openAdd = (iso) => {
+      if (justDragged.current) return;
+      setAddFor(iso);
+    };
+    const renderMonth = () => {
+      const mStart = monthStart(cursor);
+      const cursorMonth = (/* @__PURE__ */ new Date(mStart + "T00:00:00")).getMonth();
+      const start = gridStart(mStart);
+      const weeks = [];
+      for (let wk = 0; wk < 6; wk++) {
+        const r = [];
+        for (let i = 0; i < 7; i++) r.push(addDaysISO(start, wk * 7 + i));
+        weeks.push(r);
+      }
+      const gridEnd = addDaysISO(start, 41);
+      const monthQuarters = data.quarters.filter((q) => q.startDate && q.endDate && q.startDate <= gridEnd && q.endDate >= start);
+      return /* @__PURE__ */ React.createElement(React.Fragment, null, monthQuarters.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "cal-quarters" }, monthQuarters.map((q) => /* @__PURE__ */ React.createElement("button", { key: q.id, className: "cal-qchip", style: { borderColor: q.color, color: q.color }, onClick: () => setEditing({ kind: "quarter", item: q }) }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: q.color } }), q.title || "Untitled goal", /* @__PURE__ */ React.createElement("span", { className: "cal-qrange" }, fmt(q.startDate), "\u2013", fmt(q.endDate))))), /* @__PURE__ */ React.createElement("div", { className: "cal-grid" }, /* @__PURE__ */ React.createElement("div", { className: "cal-dow" }, DOW.map((d) => /* @__PURE__ */ React.createElement("span", { key: d }, d))), weeks.map((row, wi) => {
+        const ws = row[0], we = row[6];
+        const wk = data.weeks.filter((w) => w.startDate && w.endDate && w.startDate <= we && w.endDate >= ws);
+        return /* @__PURE__ */ React.createElement("div", { key: wi, className: "cal-week" }, /* @__PURE__ */ React.createElement("div", { className: "cal-bars" }, wk.slice(0, 3).map((w) => {
+          const c0 = colOf(w.startDate < ws ? ws : w.startDate, row);
+          const c1 = colOf(w.endDate > we ? we : w.endDate, row);
+          const q = data.quarters.find((x) => x.id === w.quarterId);
+          return /* @__PURE__ */ React.createElement("div", { key: w.id, className: "cal-bar-lane" }, /* @__PURE__ */ React.createElement("button", { className: "cal-bar" + (w.status === "done" ? " done" : ""), style: { gridColumn: `${c0 + 1} / ${c1 + 2}`, background: q ? q.color : "var(--ink-faint)" }, onClick: () => setEditing({ kind: "week", item: w }), title: w.title }, w.startDate < ws ? "\u2026 " : "", w.title || "Untitled"));
+        }), wk.length > 3 && /* @__PURE__ */ React.createElement("div", { className: "cal-bar-more" }, "+", wk.length - 3, " more weekly")), /* @__PURE__ */ React.createElement("div", { className: "cal-days" }, row.map((iso) => {
+          const inMonth = (/* @__PURE__ */ new Date(iso + "T00:00:00")).getMonth() === cursorMonth;
+          const dayTasks = data.days.filter((d) => d.date === iso);
+          return /* @__PURE__ */ React.createElement("div", { key: iso, "data-date": iso, className: "cal-cell" + (inMonth ? "" : " other") + (iso === today ? " today" : "") + (iso === dropDate ? " drop" : ""), onClick: () => openAdd(iso) }, /* @__PURE__ */ React.createElement("div", { className: "cal-num" }, (/* @__PURE__ */ new Date(iso + "T00:00:00")).getDate()), /* @__PURE__ */ React.createElement("div", { className: "cal-chips" }, dayTasks.slice(0, 3).map((d) => /* @__PURE__ */ React.createElement(DayChip, { key: d.id, d })), dayTasks.length > 3 && /* @__PURE__ */ React.createElement("div", { className: "cal-chip-more" }, "+", dayTasks.length - 3)));
+        })));
+      })));
+    };
+    const renderWeek = () => {
+      const ws = weekStartOf(cursor);
+      const days = [];
+      for (let i = 0; i < 7; i++) days.push(addDaysISO(ws, i));
+      const we = days[6];
+      const wk = data.weeks.filter((w) => w.startDate && w.endDate && w.startDate <= we && w.endDate >= ws);
+      return /* @__PURE__ */ React.createElement("div", { className: "wk-wrap" }, wk.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wk-weeklies" }, wk.map((w) => {
+        const q = data.quarters.find((x) => x.id === w.quarterId);
+        return /* @__PURE__ */ React.createElement("button", { key: w.id, className: "wk-weekly" + (w.status === "done" ? " done" : ""), style: { borderLeftColor: q ? q.color : "var(--ink-faint)" }, onClick: () => setEditing({ kind: "week", item: w }) }, /* @__PURE__ */ React.createElement(StatusDot, { status: w.status }), w.title || "Untitled", /* @__PURE__ */ React.createElement("span", { className: "wk-weekly-range" }, fmt(w.startDate), "\u2013", fmt(w.endDate)));
+      })), /* @__PURE__ */ React.createElement("div", { className: "wk-days" }, days.map((iso) => {
+        const dt = /* @__PURE__ */ new Date(iso + "T00:00:00");
+        const dayTasks = data.days.filter((d) => d.date === iso);
+        return /* @__PURE__ */ React.createElement("div", { key: iso, "data-date": iso, className: "wk-day" + (iso === today ? " today" : "") + (iso === dropDate ? " drop" : "") }, /* @__PURE__ */ React.createElement("div", { className: "wk-day-head" }, /* @__PURE__ */ React.createElement("div", { className: "wk-day-name" }, dt.toLocaleDateString(void 0, { weekday: "short" })), /* @__PURE__ */ React.createElement("div", { className: "wk-day-num" + (iso === today ? " today" : "") }, dt.getDate()), /* @__PURE__ */ React.createElement("button", { className: "wk-add", onClick: () => openAdd(iso), title: "Add" }, /* @__PURE__ */ React.createElement(Plus, { size: 15 }))), /* @__PURE__ */ React.createElement("div", { className: "wk-tasks" }, dayTasks.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "wk-empty", onClick: () => openAdd(iso) }, "\u2014") : dayTasks.map((d) => /* @__PURE__ */ React.createElement(DayChip, { key: d.id, d, full: true }))));
+      })));
+    };
+    const label = mode === "month" ? (/* @__PURE__ */ new Date(monthStart(cursor) + "T00:00:00")).toLocaleDateString(void 0, { month: "long", year: "numeric" }) : (() => {
+      const ws = weekStartOf(cursor);
+      const we = addDaysISO(ws, 6);
+      return `${fmt(ws)} \u2013 ${fmt(we)}`;
+    })();
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Calendar", subtitle: "Tap a day to add. Tap an item to edit. Drag a daily task to move it to another day." }), /* @__PURE__ */ React.createElement("div", { className: "cal-toolbar" }, /* @__PURE__ */ React.createElement("div", { className: "seg" }, /* @__PURE__ */ React.createElement("button", { className: "seg-btn" + (mode === "month" ? " on" : ""), onClick: () => setMode("month") }, "Month"), /* @__PURE__ */ React.createElement("button", { className: "seg-btn" + (mode === "week" ? " on" : ""), onClick: () => setMode("week") }, "Week")), /* @__PURE__ */ React.createElement("button", { className: "icon-btn", onClick: () => shift(-1) }, /* @__PURE__ */ React.createElement(ChevronRight, { size: 18, style: { transform: "rotate(180deg)" } })), /* @__PURE__ */ React.createElement("div", { className: "cal-month" }, label), /* @__PURE__ */ React.createElement("button", { className: "icon-btn", onClick: () => shift(1) }, /* @__PURE__ */ React.createElement(ChevronRight, { size: 18 })), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm cal-today", onClick: () => setCursor(todayISO()) }, "Today")), mode === "month" ? renderMonth() : renderWeek(), addFor && /* @__PURE__ */ React.createElement(Modal, { title: `Add for ${fmtLong(addFor)}`, onClose: () => setAddFor(null) }, /* @__PURE__ */ React.createElement("div", { className: "add-choices" }, /* @__PURE__ */ React.createElement("button", { className: "add-choice", onClick: () => {
+      setEditing({ kind: "day", item: newItem("day", addFor) });
+      setAddFor(null);
+    } }, /* @__PURE__ */ React.createElement(ListChecks, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Daily task"), /* @__PURE__ */ React.createElement("span", null, "On this day"))), /* @__PURE__ */ React.createElement("button", { className: "add-choice", onClick: () => {
+      setEditing({ kind: "week", item: newItem("week", addFor) });
+      setAddFor(null);
+    } }, /* @__PURE__ */ React.createElement(CalendarRange, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Weekly task"), /* @__PURE__ */ React.createElement("span", null, "Starts this day, runs a week"))), /* @__PURE__ */ React.createElement("button", { className: "add-choice", onClick: () => {
+      setEditing({ kind: "quarter", item: newItem("quarter", addFor) });
+      setAddFor(null);
+    } }, /* @__PURE__ */ React.createElement(Target, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Quarterly goal"), /* @__PURE__ */ React.createElement("span", null, "Starts this day, ~3 months"))))), editing && /* @__PURE__ */ React.createElement(CalEditor, { data, editing, setEditing, onSave: save, onDelete: del }), /* @__PURE__ */ React.createElement("div", { ref: ghostRef, className: "drag-ghost", style: { display: dragLabel ? "block" : "none" } }, dragLabel));
+  }
+  function StatusDot({ status }) {
+    return /* @__PURE__ */ React.createElement("span", { className: "sd s-" + status });
+  }
+  function CalEditor({ data, editing, setEditing, onSave, onDelete }) {
+    const { kind } = editing;
+    const [item, setItem] = useState(editing.item);
+    const set = (k, v) => setItem({ ...item, [k]: v });
+    const titleOk = kind === "quarter" || kind === "week" ? item.title.trim() : item.title.trim();
+    const heading = kind === "quarter" ? "Quarterly goal" : kind === "week" ? "Weekly task" : "Daily task";
+    return /* @__PURE__ */ React.createElement(Modal, { title: heading, onClose: () => setEditing(null) }, /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, kind === "quarter" ? "Goal" : "Task"), /* @__PURE__ */ React.createElement("input", { value: item.title, onChange: (e) => set("title", e.target.value), autoFocus: true, placeholder: kind === "day" ? "e.g. Image PS19/E4 slices" : kind === "week" ? "e.g. Finish AAV titration" : "e.g. Submit manuscript" })), kind === "day" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Date"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.date, onChange: (e) => set("date", e.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Belongs to"), /* @__PURE__ */ React.createElement(DayParentSelect, { data, value: item, onChange: (patch) => setItem({ ...item, ...patch }) })), /* @__PURE__ */ React.createElement("label", { className: "field checkbox" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: item.priority === "high", onChange: (e) => set("priority", e.target.checked ? "high" : "normal") }), /* @__PURE__ */ React.createElement("span", null, "Mark as priority"))), kind === "week" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Belongs to"), /* @__PURE__ */ React.createElement(WeekParentSelect, { data, value: item, onChange: (patch) => setItem({ ...item, ...patch }) })), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Start"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.startDate, onChange: (e) => set("startDate", e.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "End"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.endDate, onChange: (e) => set("endDate", e.target.value) })))), kind === "quarter" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Project"), /* @__PURE__ */ React.createElement(QuarterProjectSelect, { data, value: item.projectId, onChange: (v) => set("projectId", v) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Description"), /* @__PURE__ */ React.createElement("textarea", { rows: 2, value: item.description, onChange: (e) => set("description", e.target.value) })), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Start"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.startDate, onChange: (e) => set("startDate", e.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "End"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.endDate, onChange: (e) => set("endDate", e.target.value) }))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Colour"), /* @__PURE__ */ React.createElement("div", { className: "swatches" }, QCOLORS.map((c) => /* @__PURE__ */ React.createElement("button", { key: c, className: "swatch" + (item.color === c ? " on" : ""), style: { background: c }, onClick: () => set("color", c) }))))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Status"), /* @__PURE__ */ React.createElement("div", { className: "mood-row" }, STATUSES.map((s) => /* @__PURE__ */ React.createElement("button", { key: s.id, className: "mood-chip" + (item.status === s.id ? " on" : ""), onClick: () => set("status", s.id) }, s.label))))), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, data[kind === "quarter" ? "quarters" : kind === "week" ? "weeks" : "days"].some((x) => x.id === item.id) && /* @__PURE__ */ React.createElement("button", { className: "btn ghost danger-text", onClick: () => {
+      onDelete(kind, item.id);
+      setEditing(null);
+    } }, "Delete"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }), /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditing(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => onSave(kind, item), disabled: !titleOk }, "Save")));
+  }
+  function Quarters({ data, update }) {
+    const [editing, setEditing] = useState(null);
+    const blank = () => ({ id: uid(), title: "", description: "", startDate: todayISO(), endDate: "", status: "todo", color: QCOLORS[data.quarters.length % QCOLORS.length] });
+    const save = (q) => {
+      update((dt) => {
+        const i = dt.quarters.findIndex((x) => x.id === q.id);
+        if (i >= 0) dt.quarters[i] = q;
+        else dt.quarters.push(q);
+        return dt;
+      });
+      setEditing(null);
+    };
+    const del = (id) => update((dt) => {
+      dt.quarters = dt.quarters.filter((x) => x.id !== id);
+      dt.weeks.forEach((w) => {
+        if (w.quarterId === id) w.quarterId = null;
+      });
+      return dt;
+    });
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Quarterly goals", subtitle: "The big rocks. Everything else links up to these.", action: /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => setEditing(blank()) }, /* @__PURE__ */ React.createElement(Plus, { size: 16 }), "New goal") }), data.quarters.length === 0 && /* @__PURE__ */ React.createElement(Empty, null, "No quarterly goals yet. These are your north stars for the next ~3 months."), /* @__PURE__ */ React.createElement("div", { className: "q-grid" }, data.quarters.map((q) => {
+      const weeks = data.weeks.filter((w) => w.quarterId === q.id);
+      const done = weeks.filter((w) => w.status === "done").length;
+      const pct = weeks.length ? Math.round(done / weeks.length * 100) : q.status === "done" ? 100 : 0;
+      return /* @__PURE__ */ React.createElement("div", { key: q.id, className: "q-card", style: { borderTopColor: q.color } }, /* @__PURE__ */ React.createElement("div", { className: "q-top" }, /* @__PURE__ */ React.createElement(StatusButton, { value: q.status, onChange: (s) => update((dt) => {
+        dt.quarters.find((x) => x.id === q.id).status = s;
+        return dt;
+      }) }), /* @__PURE__ */ React.createElement("div", { className: "q-dates" }, fmt(q.startDate), " \u2013 ", fmt(q.endDate))), /* @__PURE__ */ React.createElement("h3", { className: "q-title" }, q.title || "Untitled goal"), q.description && /* @__PURE__ */ React.createElement("p", { className: "q-desc" }, q.description), /* @__PURE__ */ React.createElement("div", { className: "progress" }, /* @__PURE__ */ React.createElement("div", { className: "progress-fill", style: { width: pct + "%", background: q.color } })), /* @__PURE__ */ React.createElement("div", { className: "q-meta" }, /* @__PURE__ */ React.createElement("span", { className: "muted small" }, weeks.length, " weekly task", weeks.length === 1 ? "" : "s", " \xB7 ", pct, "%")), /* @__PURE__ */ React.createElement("div", { className: "row-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setEditing(q) }, "Edit"), /* @__PURE__ */ React.createElement("button", { className: "icon-btn danger", onClick: () => del(q.id) }, /* @__PURE__ */ React.createElement(Trash2, { size: 15 }))));
+    })), editing && /* @__PURE__ */ React.createElement(Modal, { title: data.quarters.some((x) => x.id === editing.id) ? "Edit goal" : "New quarterly goal", onClose: () => setEditing(null) }, /* @__PURE__ */ React.createElement(QForm, { data, value: editing, onChange: setEditing }), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditing(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => save(editing), disabled: !editing.title.trim() }, "Save"))));
+  }
+  function QForm({ data, value, onChange }) {
+    const set = (k, v) => onChange({ ...value, [k]: v });
+    return /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Goal"), /* @__PURE__ */ React.createElement("input", { value: value.title, onChange: (e) => set("title", e.target.value), placeholder: "e.g. Submit the APOE4 tau-seeding manuscript", autoFocus: true })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Project"), /* @__PURE__ */ React.createElement(QuarterProjectSelect, { data, value: value.projectId, onChange: (v) => set("projectId", v) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Description"), /* @__PURE__ */ React.createElement("textarea", { value: value.description, onChange: (e) => set("description", e.target.value), rows: 3, placeholder: "What does success look like?" })), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Start"), /* @__PURE__ */ React.createElement("input", { type: "date", value: value.startDate, onChange: (e) => set("startDate", e.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "End"), /* @__PURE__ */ React.createElement("input", { type: "date", value: value.endDate, onChange: (e) => set("endDate", e.target.value) }))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Colour"), /* @__PURE__ */ React.createElement("div", { className: "swatches" }, QCOLORS.map((c) => /* @__PURE__ */ React.createElement("button", { key: c, className: "swatch" + (value.color === c ? " on" : ""), style: { background: c }, onClick: () => set("color", c) })))));
+  }
+  function Weeks({ data, update }) {
+    const [editing, setEditing] = useState(null);
+    const startOfWeek = () => {
+      const d = /* @__PURE__ */ new Date();
+      const day = (d.getDay() + 6) % 7;
+      d.setDate(d.getDate() - day);
+      return d.toISOString().slice(0, 10);
+    };
+    const endOfWeek = () => {
+      const d = /* @__PURE__ */ new Date(startOfWeek() + "T00:00:00");
+      d.setDate(d.getDate() + 6);
+      return d.toISOString().slice(0, 10);
+    };
+    const blank = () => ({ id: uid(), title: "", quarterId: data.quarters[0]?.id || null, startDate: startOfWeek(), endDate: endOfWeek(), status: "todo", notes: "" });
+    const save = (w) => {
+      update((dt) => {
+        const i = dt.weeks.findIndex((x) => x.id === w.id);
+        if (i >= 0) dt.weeks[i] = w;
+        else dt.weeks.push(w);
+        return dt;
+      });
+      setEditing(null);
+    };
+    const del = (id) => update((dt) => {
+      dt.weeks = dt.weeks.filter((x) => x.id !== id);
+      dt.days.forEach((d) => {
+        if (d.weekId === id) d.weekId = null;
+      });
+      return dt;
+    });
+    const groups = [
+      ...data.quarters.map((q) => ({ q, weeks: data.weeks.filter((w) => w.quarterId === q.id) })),
+      { q: null, weeks: data.weeks.filter((w) => !w.quarterId || !data.quarters.some((q) => q.id === w.quarterId)) }
+    ];
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Weekly tasks", subtitle: "Each can roll up into a quarterly goal.", action: /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => setEditing(blank()) }, /* @__PURE__ */ React.createElement(Plus, { size: 16 }), "New task") }), data.weeks.length === 0 && /* @__PURE__ */ React.createElement(Empty, null, "No weekly tasks yet. Break a quarterly goal into weekly moves."), groups.map((g, gi) => g.weeks.length > 0 && /* @__PURE__ */ React.createElement("div", { key: gi, className: "group" }, /* @__PURE__ */ React.createElement("div", { className: "group-head" }, g.q ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: g.q.color } }), /* @__PURE__ */ React.createElement("span", null, g.q.title)) : /* @__PURE__ */ React.createElement("span", { className: "muted" }, "Unlinked")), /* @__PURE__ */ React.createElement("div", { className: "list" }, g.weeks.map((w) => {
+      const dayCount = data.days.filter((d) => d.weekId === w.id).length;
+      return /* @__PURE__ */ React.createElement("div", { key: w.id, className: "row" }, /* @__PURE__ */ React.createElement(StatusButton, { value: w.status, onChange: (s) => update((dt) => {
+        dt.weeks.find((x) => x.id === w.id).status = s;
+        return dt;
+      }) }), /* @__PURE__ */ React.createElement("div", { className: "row-main", onClick: () => setEditing(w) }, /* @__PURE__ */ React.createElement("div", { className: "row-title" + (w.status === "done" ? " struck" : "") }, w.title || "Untitled"), /* @__PURE__ */ React.createElement("div", { className: "row-sub" }, fmt(w.startDate), " \u2013 ", fmt(w.endDate), dayCount ? ` \xB7 ${dayCount} daily` : "")), /* @__PURE__ */ React.createElement("button", { className: "icon-btn danger", onClick: () => del(w.id) }, /* @__PURE__ */ React.createElement(Trash2, { size: 15 })));
+    })))), editing && /* @__PURE__ */ React.createElement(Modal, { title: data.weeks.some((x) => x.id === editing.id) ? "Edit weekly task" : "New weekly task", onClose: () => setEditing(null) }, /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Task"), /* @__PURE__ */ React.createElement("input", { value: editing.title, onChange: (e) => setEditing({ ...editing, title: e.target.value }), placeholder: "e.g. Finish AAV vector titration", autoFocus: true })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Belongs to"), /* @__PURE__ */ React.createElement(WeekParentSelect, { data, value: editing, onChange: (patch) => setEditing({ ...editing, ...patch }) })), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Start"), /* @__PURE__ */ React.createElement("input", { type: "date", value: editing.startDate, onChange: (e) => setEditing({ ...editing, startDate: e.target.value }) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "End"), /* @__PURE__ */ React.createElement("input", { type: "date", value: editing.endDate, onChange: (e) => setEditing({ ...editing, endDate: e.target.value }) }))), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Notes"), /* @__PURE__ */ React.createElement("textarea", { rows: 2, value: editing.notes, onChange: (e) => setEditing({ ...editing, notes: e.target.value }) }))), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditing(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => save(editing), disabled: !editing.title.trim() }, "Save"))));
+  }
+  function Days({ data, update }) {
+    const [editing, setEditing] = useState(null);
+    const [focusDate, setFocusDate] = useState(todayISO());
+    const blank = () => ({ id: uid(), title: "", weekId: null, date: focusDate, status: "todo", priority: "normal" });
+    const save = (d) => {
+      update((dt) => {
+        const i = dt.days.findIndex((x) => x.id === d.id);
+        if (i >= 0) dt.days[i] = d;
+        else dt.days.push(d);
+        return dt;
+      });
+      setEditing(null);
+    };
+    const del = (id) => update((dt) => {
+      dt.days = dt.days.filter((x) => x.id !== id);
+      return dt;
+    });
+    const dayTasks = data.days.filter((d) => d.date === focusDate).sort((a, b) => (a.priority === "high" ? -1 : 1) - (b.priority === "high" ? -1 : 1));
+    const shift = (n) => {
+      const d = /* @__PURE__ */ new Date(focusDate + "T00:00:00");
+      d.setDate(d.getDate() + n);
+      setFocusDate(d.toISOString().slice(0, 10));
+    };
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Daily tasks", subtitle: "Link each to the weekly task it serves.", action: /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => setEditing(blank()) }, /* @__PURE__ */ React.createElement(Plus, { size: 16 }), "Add task") }), /* @__PURE__ */ React.createElement("div", { className: "date-strip" }, /* @__PURE__ */ React.createElement("button", { className: "icon-btn", onClick: () => shift(-1) }, /* @__PURE__ */ React.createElement(ChevronRight, { size: 18, style: { transform: "rotate(180deg)" } })), /* @__PURE__ */ React.createElement("div", { className: "date-strip-label" }, /* @__PURE__ */ React.createElement("strong", null, fmtLong(focusDate)), focusDate !== todayISO() && /* @__PURE__ */ React.createElement("button", { className: "text-link", onClick: () => setFocusDate(todayISO()) }, "back to today")), /* @__PURE__ */ React.createElement("button", { className: "icon-btn", onClick: () => shift(1) }, /* @__PURE__ */ React.createElement(ChevronRight, { size: 18 }))), dayTasks.length === 0 ? /* @__PURE__ */ React.createElement(Empty, null, "Nothing planned for this day.") : /* @__PURE__ */ React.createElement("div", { className: "list" }, dayTasks.map((d) => {
+      const week = data.weeks.find((w) => w.id === d.weekId);
+      return /* @__PURE__ */ React.createElement("div", { key: d.id, className: "row" }, /* @__PURE__ */ React.createElement(StatusButton, { value: d.status, onChange: (s) => update((dt) => {
+        dt.days.find((x) => x.id === d.id).status = s;
+        return dt;
+      }) }), /* @__PURE__ */ React.createElement("div", { className: "row-main", onClick: () => setEditing(d) }, /* @__PURE__ */ React.createElement("div", { className: "row-title" + (d.status === "done" ? " struck" : "") }, d.title || "Untitled", " ", d.priority === "high" && /* @__PURE__ */ React.createElement(Tag, { tone: "seal" }, "priority")), week && /* @__PURE__ */ React.createElement("div", { className: "row-sub" }, /* @__PURE__ */ React.createElement(Link2, { size: 11 }), " ", week.title)), /* @__PURE__ */ React.createElement("button", { className: "icon-btn danger", onClick: () => del(d.id) }, /* @__PURE__ */ React.createElement(Trash2, { size: 15 })));
+    })), editing && /* @__PURE__ */ React.createElement(Modal, { title: data.days.some((x) => x.id === editing.id) ? "Edit task" : "New daily task", onClose: () => setEditing(null) }, /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Task"), /* @__PURE__ */ React.createElement("input", { value: editing.title, onChange: (e) => setEditing({ ...editing, title: e.target.value }), placeholder: "e.g. Image PS19/E4 slices", autoFocus: true })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Date"), /* @__PURE__ */ React.createElement("input", { type: "date", value: editing.date, onChange: (e) => setEditing({ ...editing, date: e.target.value }) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Belongs to"), /* @__PURE__ */ React.createElement(DayParentSelect, { data, value: editing, onChange: (patch) => setEditing({ ...editing, ...patch }) })), /* @__PURE__ */ React.createElement("label", { className: "field checkbox" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: editing.priority === "high", onChange: (e) => setEditing({ ...editing, priority: e.target.checked ? "high" : "normal" }) }), /* @__PURE__ */ React.createElement("span", null, "Mark as priority"))), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditing(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => save(editing), disabled: !editing.title.trim() }, "Save"))));
+  }
+  function Gantt({ data }) {
+    const [showDays, setShowDays] = useState(false);
+    const rows = useMemo(() => {
+      const out = [];
+      const wDated = (w) => w.startDate && w.endDate;
+      const qDated = (q) => q.startDate && q.endDate;
+      const daysOfWeek = (wid) => data.days.filter((d) => d.weekId === wid && d.date);
+      const pushWeek = (w, color, level) => {
+        out.push({ kind: "week", id: w.id, label: w.title, start: w.startDate, end: w.endDate, color, status: w.status, level });
+        if (showDays) daysOfWeek(w.id).forEach((d) => out.push({ kind: "day", id: d.id, label: d.title, start: d.date, end: d.date, color, status: d.status, level: level + 1 }));
+      };
+      data.projects.forEach((p) => {
+        const qs = data.quarters.filter((q) => q.projectId === p.id);
+        const directWeeks = data.weeks.filter((w) => w.projectId === p.id && !w.quarterId);
+        const directDays = data.days.filter((d) => d.projectId === p.id && !d.weekId && d.date);
+        const spanItems = [];
+        qs.forEach((q) => {
+          if (qDated(q)) spanItems.push([q.startDate, q.endDate]);
+          data.weeks.filter((w) => w.quarterId === q.id && wDated(w)).forEach((w) => spanItems.push([w.startDate, w.endDate]));
+        });
+        directWeeks.forEach((w) => {
+          if (wDated(w)) spanItems.push([w.startDate, w.endDate]);
+        });
+        directDays.forEach((d) => spanItems.push([d.date, d.date]));
+        const start = spanItems.length ? spanItems.reduce((a, b) => b[0] < a ? b[0] : a, spanItems[0][0]) : null;
+        const end = spanItems.length ? spanItems.reduce((a, b) => b[1] > a ? b[1] : a, spanItems[0][1]) : null;
+        out.push({ kind: "project", id: p.id, label: p.title, start, end, color: p.color, status: p.status, level: 0, noBar: !start });
+        qs.forEach((q) => {
+          if (qDated(q)) out.push({ kind: "quarter", id: q.id, label: q.title, start: q.startDate, end: q.endDate, color: q.color, status: q.status, level: 1 });
+          else out.push({ kind: "quarter", id: q.id, label: q.title, color: q.color, status: q.status, level: 1, noBar: true });
+          data.weeks.filter((w) => w.quarterId === q.id && wDated(w)).forEach((w) => pushWeek(w, q.color, 2));
+        });
+        directWeeks.filter(wDated).forEach((w) => pushWeek(w, p.color, 1));
+        directDays.forEach((d) => out.push({ kind: "day", id: d.id, label: d.title, start: d.date, end: d.date, color: p.color, status: d.status, level: 1 }));
+      });
+      const looseQuarters = data.quarters.filter((q) => !q.projectId);
+      const looseWeeks = data.weeks.filter((w) => !effProjectOfWeek(data, w) && !w.quarterId && wDated(w));
+      if (looseQuarters.length || looseWeeks.length) {
+        out.push({ kind: "group", id: "noproject", label: "No project", level: 0 });
+        looseQuarters.forEach((q) => {
+          if (qDated(q)) out.push({ kind: "quarter", id: q.id, label: q.title, start: q.startDate, end: q.endDate, color: q.color, status: q.status, level: 1 });
+          else out.push({ kind: "quarter", id: q.id, label: q.title, color: q.color, status: q.status, level: 1, noBar: true });
+          data.weeks.filter((w) => w.quarterId === q.id && wDated(w)).forEach((w) => pushWeek(w, q.color, 2));
+        });
+        looseWeeks.forEach((w) => pushWeek(w, "var(--ink-faint)", 1));
+      }
+      return out;
+    }, [data, showDays]);
+    const dated = rows.filter((r) => r.start && r.end);
+    if (rows.length === 0) return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Gantt timeline", subtitle: "Projects, quarters and tasks plotted over time." }), /* @__PURE__ */ React.createElement(Empty, null, "Add projects, quarterly goals, or weekly tasks with dates to see them here."));
+    if (dated.length === 0) return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Gantt timeline", subtitle: "Projects, quarters and tasks plotted over time." }), /* @__PURE__ */ React.createElement(Empty, null, "Your items need start & end dates to appear on the timeline."));
+    const min = dated.reduce((m, i) => i.start < m ? i.start : m, dated[0].start);
+    const max = dated.reduce((m, i) => i.end > m ? i.end : m, dated[0].end);
+    const span = Math.max(daysBetween(min, max), 1);
+    const today = todayISO();
+    const todayPct = Math.min(100, Math.max(0, daysBetween(min, today) / span * 100));
+    const ticks = [];
+    let t = /* @__PURE__ */ new Date(min + "T00:00:00");
+    t.setDate(1);
+    while (t <= /* @__PURE__ */ new Date(max + "T00:00:00")) {
+      const iso = t.toISOString().slice(0, 10);
+      ticks.push({ pct: daysBetween(min, iso) / span * 100, label: t.toLocaleDateString(void 0, { month: "short" }) });
+      t.setMonth(t.getMonth() + 1);
+    }
+    const prefix = { project: "\u25A3 ", quarter: "\u25C6 ", week: "", day: "\xB7 " };
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
+      SectionHead,
+      {
+        title: "Gantt timeline",
+        subtitle: "Projects, quarters and tasks plotted over time.",
+        action: /* @__PURE__ */ React.createElement("label", { className: "field checkbox gantt-toggle" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: showDays, onChange: (e) => setShowDays(e.target.checked) }), /* @__PURE__ */ React.createElement("span", null, "Show daily tasks"))
+      }
+    ), /* @__PURE__ */ React.createElement("div", { className: "gantt-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "gantt" }, /* @__PURE__ */ React.createElement("div", { className: "gantt-axis" }, ticks.map((tk, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "gantt-tick", style: { left: tk.pct + "%" } }, tk.label))), /* @__PURE__ */ React.createElement("div", { className: "gantt-body" }, today >= min && today <= max && /* @__PURE__ */ React.createElement("div", { className: "gantt-today", style: { left: todayPct + "%" } }, /* @__PURE__ */ React.createElement("span", null, "today")), rows.map((it) => {
+      if (it.kind === "group") return /* @__PURE__ */ React.createElement("div", { key: "g" + it.id, className: "gantt-grouphead" }, it.label);
+      const has = it.start && it.end;
+      const left = has ? daysBetween(min, it.start) / span * 100 : 0;
+      const width = has ? Math.max(daysBetween(it.start, it.end) / span * 100, 1.2) : 0;
+      return /* @__PURE__ */ React.createElement("div", { key: it.kind + it.id, className: "gantt-row lvl" + it.level }, /* @__PURE__ */ React.createElement("div", { className: "gantt-label", title: it.label }, prefix[it.kind], it.label || "Untitled"), /* @__PURE__ */ React.createElement("div", { className: "gantt-track" }, has ? /* @__PURE__ */ React.createElement("div", { className: "gantt-bar k-" + it.kind + (it.status === "done" ? " done" : ""), style: { left: left + "%", width: width + "%", background: it.color } }, /* @__PURE__ */ React.createElement("span", { className: "gantt-bar-date" }, it.kind === "day" ? fmt(it.start) : fmt(it.start) + "\u2013" + fmt(it.end))) : /* @__PURE__ */ React.createElement("span", { className: "gantt-nodate" }, "no dates")));
+    })))));
+  }
+  function Decisions({ data, update }) {
+    const [editing, setEditing] = useState(null);
+    const blank = () => ({ id: uid(), title: "", date: todayISO(), context: "", options: "", choice: "", rationale: "", links: [] });
+    const save = (d) => {
+      update((dt) => {
+        const i = dt.decisions.findIndex((x) => x.id === d.id);
+        if (i >= 0) dt.decisions[i] = d;
+        else dt.decisions.push(d);
+        return dt;
+      });
+      setEditing(null);
+    };
+    const del = (id) => update((dt) => {
+      dt.decisions = dt.decisions.filter((x) => x.id !== id);
+      return dt;
+    });
+    const sorted = [...data.decisions].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Decision log", subtitle: "Why you chose what you chose \u2014 your future self will thank you.", action: /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => setEditing(blank()) }, /* @__PURE__ */ React.createElement(Plus, { size: 16 }), "Log decision") }), sorted.length === 0 && /* @__PURE__ */ React.createElement(Empty, null, "No decisions logged. Capture the reasoning behind a tricky call while it's fresh."), /* @__PURE__ */ React.createElement("div", { className: "ledger" }, sorted.map((d) => /* @__PURE__ */ React.createElement("div", { key: d.id, className: "ledger-item", onClick: () => setEditing(d) }, /* @__PURE__ */ React.createElement("div", { className: "ledger-date" }, fmt(d.date)), /* @__PURE__ */ React.createElement("div", { className: "ledger-main" }, /* @__PURE__ */ React.createElement("div", { className: "ledger-title" }, d.title || "Untitled decision"), d.choice && /* @__PURE__ */ React.createElement("div", { className: "ledger-choice" }, /* @__PURE__ */ React.createElement("strong", null, "Chose:"), " ", d.choice), d.rationale && /* @__PURE__ */ React.createElement("p", { className: "ledger-rationale" }, d.rationale), /* @__PURE__ */ React.createElement(LinkBadges, { data, links: d.links })), /* @__PURE__ */ React.createElement("button", { className: "icon-btn danger", onClick: (e) => {
+      e.stopPropagation();
+      del(d.id);
+    } }, /* @__PURE__ */ React.createElement(Trash2, { size: 15 }))))), editing && /* @__PURE__ */ React.createElement(Modal, { wide: true, title: data.decisions.some((x) => x.id === editing.id) ? "Edit decision" : "Log a decision", onClose: () => setEditing(null) }, /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field grow" }, /* @__PURE__ */ React.createElement("span", null, "Decision"), /* @__PURE__ */ React.createElement("input", { value: editing.title, onChange: (e) => setEditing({ ...editing, title: e.target.value }), placeholder: "e.g. Use AAV-gfaABC1D over CMV promoter", autoFocus: true })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Date"), /* @__PURE__ */ React.createElement("input", { type: "date", value: editing.date, onChange: (e) => setEditing({ ...editing, date: e.target.value }) }))), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Context / problem"), /* @__PURE__ */ React.createElement("textarea", { rows: 2, value: editing.context, onChange: (e) => setEditing({ ...editing, context: e.target.value }), placeholder: "What prompted this?" })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Options considered"), /* @__PURE__ */ React.createElement("textarea", { rows: 2, value: editing.options, onChange: (e) => setEditing({ ...editing, options: e.target.value }), placeholder: "A, B, C\u2026" })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "What was chosen"), /* @__PURE__ */ React.createElement("input", { value: editing.choice, onChange: (e) => setEditing({ ...editing, choice: e.target.value }) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Rationale"), /* @__PURE__ */ React.createElement("textarea", { rows: 3, value: editing.rationale, onChange: (e) => setEditing({ ...editing, rationale: e.target.value }), placeholder: "Why this, and what would change your mind?" })), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Link to tasks / decisions"), /* @__PURE__ */ React.createElement(LinkPicker, { data, links: editing.links, onChange: (l) => setEditing({ ...editing, links: l }) }))), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditing(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => save(editing), disabled: !editing.title.trim() }, "Save"))));
+  }
+  var MOODS = [{ id: "great", label: "Energised" }, { id: "good", label: "Steady" }, { id: "meh", label: "Scattered" }, { id: "low", label: "Depleted" }];
+  function Reflections({ data, update }) {
+    const [editing, setEditing] = useState(null);
+    const blank = () => ({ id: uid(), date: todayISO(), title: "", content: "", mood: "good", links: [] });
+    const save = (r) => {
+      update((dt) => {
+        const i = dt.reflections.findIndex((x) => x.id === r.id);
+        if (i >= 0) dt.reflections[i] = r;
+        else dt.reflections.push(r);
+        return dt;
+      });
+      setEditing(null);
+    };
+    const del = (id) => update((dt) => {
+      dt.reflections = dt.reflections.filter((x) => x.id !== id);
+      return dt;
+    });
+    const sorted = [...data.reflections].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Reflections", subtitle: "Close the loop. What worked, what to change.", action: /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => setEditing(blank()) }, /* @__PURE__ */ React.createElement(Plus, { size: 16 }), "New entry") }), sorted.length === 0 && /* @__PURE__ */ React.createElement(Empty, null, "No reflections yet. A few honest lines at the end of a week compound over time."), /* @__PURE__ */ React.createElement("div", { className: "reflections" }, sorted.map((r) => /* @__PURE__ */ React.createElement("div", { key: r.id, className: "refl-card", onClick: () => setEditing(r) }, /* @__PURE__ */ React.createElement("div", { className: "refl-head" }, /* @__PURE__ */ React.createElement("span", { className: "refl-date" }, fmtLong(r.date)), /* @__PURE__ */ React.createElement(Tag, { tone: "mood" }, MOODS.find((m) => m.id === r.mood)?.label || "\u2014")), r.title && /* @__PURE__ */ React.createElement("div", { className: "refl-title" }, r.title), /* @__PURE__ */ React.createElement("p", { className: "refl-body" }, r.content), /* @__PURE__ */ React.createElement(LinkBadges, { data, links: r.links }), /* @__PURE__ */ React.createElement("button", { className: "icon-btn danger refl-del", onClick: (e) => {
+      e.stopPropagation();
+      del(r.id);
+    } }, /* @__PURE__ */ React.createElement(Trash2, { size: 15 }))))), editing && /* @__PURE__ */ React.createElement(Modal, { wide: true, title: data.reflections.some((x) => x.id === editing.id) ? "Edit reflection" : "New reflection", onClose: () => setEditing(null) }, /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Date"), /* @__PURE__ */ React.createElement("input", { type: "date", value: editing.date, onChange: (e) => setEditing({ ...editing, date: e.target.value }) })), /* @__PURE__ */ React.createElement("label", { className: "field grow" }, /* @__PURE__ */ React.createElement("span", null, "Title (optional)"), /* @__PURE__ */ React.createElement("input", { value: editing.title, onChange: (e) => setEditing({ ...editing, title: e.target.value }), placeholder: "e.g. Week 12 \u2014 seeding cohort" }))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "How did it feel?"), /* @__PURE__ */ React.createElement("div", { className: "mood-row" }, MOODS.map((m) => /* @__PURE__ */ React.createElement("button", { key: m.id, className: "mood-chip" + (editing.mood === m.id ? " on" : ""), onClick: () => setEditing({ ...editing, mood: m.id }) }, m.label)))), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Reflection"), /* @__PURE__ */ React.createElement("textarea", { rows: 6, value: editing.content, onChange: (e) => setEditing({ ...editing, content: e.target.value }), placeholder: "What moved forward? What got stuck? What will you do differently?", autoFocus: true })), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Link to tasks / decisions"), /* @__PURE__ */ React.createElement(LinkPicker, { data, links: editing.links, onChange: (l) => setEditing({ ...editing, links: l }) }))), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditing(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => save(editing), disabled: !editing.content.trim() }, "Save"))));
+  }
+  function Style() {
+    return /* @__PURE__ */ React.createElement("style", null, `
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Spectral:wght@300;400;500;600&display=swap');
+:root{--paper:#F4EFE3;--paper-2:#EBE3D2;--card:#FBF8F0;--ink:#221F18;--ink-soft:#524D41;--ink-faint:#928a78;--line:#DBD1BD;--seal:#9B3322;--celadon:#6f8a66;--gold:#a87f3e;--blue:#4A6C8C;--r:14px;--shadow:0 1px 2px rgba(34,31,24,.06),0 8px 24px rgba(34,31,24,.05);}
+*{box-sizing:border-box}
+body{margin:0}
+.root,.auth-wrap,.splash-wrap,.splash{font-family:'Spectral',Georgia,serif;color:var(--ink);background:radial-gradient(120% 80% at 0% 0%,#F8F4EA 0%,var(--paper) 55%,var(--paper-2) 100%);min-height:100vh;-webkit-font-smoothing:antialiased}
+.root{display:flex}
+button{font-family:inherit;cursor:pointer}
+h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;margin:0;letter-spacing:-.01em}
+.muted{color:var(--ink-faint)}.small{font-size:12px}.muted-icon{color:var(--ink-faint)}
+.splash{display:grid;place-items:center;font-size:17px;color:var(--ink-faint)}
+.sidebar{width:228px;flex-shrink:0;padding:24px 16px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:8px;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:12px;padding:4px 8px 18px}
+.seal{display:grid;place-items:center;width:40px;height:40px;border-radius:10px;background:var(--seal);color:#F4EFE3;font-family:'Fraunces',serif;font-size:22px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.12)}
+.seal.big{width:60px;height:60px;font-size:32px;border-radius:14px;margin:0 auto 6px}
+.brand-title{font-family:'Fraunces',serif;font-size:19px;line-height:1}
+.brand-sub{font-size:11px;color:var(--ink-faint);letter-spacing:.14em;text-transform:uppercase;margin-top:3px}
+.side-nav{display:flex;flex-direction:column;gap:2px;flex:1}
+.side-link{display:flex;align-items:center;gap:11px;padding:10px 12px;border:none;background:none;border-radius:10px;color:var(--ink-soft);font-size:15px;text-align:left;transition:.15s}
+.side-link:hover{background:rgba(155,51,34,.06);color:var(--ink)}
+.side-link.active{background:var(--ink);color:var(--paper)}
+.side-foot{display:flex;align-items:center;gap:8px}
+.side-out{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink-faint)}
+.side-out:hover{color:var(--seal);border-color:var(--seal)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{display:none}
+.canvas{padding:34px 40px 80px;max-width:1100px;width:100%}
+.sync-pill{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);font-size:12px;font-family:'Spectral',serif;flex:1;justify-content:center}
+.sync-pill:hover{border-color:var(--seal);color:var(--seal)}
+.sync-pill.compact{padding:7px;border-radius:50%;flex:none}
+.spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:22px}
+.sec-head h2{font-size:27px}
+.sec-sub{color:var(--ink-faint);font-size:14px;margin:5px 0 0;max-width:46ch}
+.btn{display:inline-flex;align-items:center;gap:7px;border-radius:10px;padding:9px 15px;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);transition:.15s;white-space:nowrap}
+.btn:hover{border-color:var(--ink-faint)}
+.btn.primary{background:var(--seal);color:#F8F4EA;border-color:var(--seal)}
+.btn.primary:hover{background:#86281a}
+.btn.primary:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent}.btn.sm{padding:6px 11px;font-size:13px}.btn.full{width:100%;justify-content:center;margin-top:4px}
+.icon-btn{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--ink-faint)}
+.icon-btn:hover{background:rgba(34,31,24,.05);color:var(--ink)}
+.icon-btn.danger:hover{color:var(--seal);background:rgba(155,51,34,.08)}
+.text-link{border:none;background:none;color:var(--seal);font-family:inherit;font-size:inherit;text-decoration:underline;text-underline-offset:3px;padding:0}
+.text-link.center{display:block;margin:14px auto 0;text-align:center}
+.tag{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;padding:3px 7px;border-radius:6px;background:var(--paper-2);color:var(--ink-soft);font-family:'Spectral',serif;font-weight:500}
+.tag.t-seal,.tag.t-quarter{background:rgba(155,51,34,.12);color:var(--seal)}
+.tag.t-week{background:rgba(74,108,140,.12);color:var(--blue)}
+.tag.t-day{background:rgba(111,138,102,.16);color:var(--celadon)}
+.tag.t-decision{background:rgba(168,127,62,.16);color:var(--gold)}
+.tag.t-mood{background:var(--paper-2);color:var(--ink-soft)}
+.status-btn{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--card);flex-shrink:0;color:var(--ink-faint);transition:.15s}
+.status-btn.s-doing{color:var(--gold);border-color:var(--gold)}
+.status-btn.s-done{color:#fff;background:var(--celadon);border-color:var(--celadon)}
+.dash-hero{margin-bottom:26px}
+.dash-date{color:var(--ink-faint);font-size:14px;letter-spacing:.04em;margin:0 0 4px}
+.dash-hero h1{font-size:38px}
+.dash-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;box-shadow:var(--shadow)}
+.card .sec-head{margin-bottom:14px}.card .sec-head h2{font-size:17px}
+.span-2{grid-column:span 2}
+.mini-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.mini-list li{display:flex;align-items:center;gap:10px;font-size:15px}
+.mini-list li.done .mini-title{color:var(--ink-faint);text-decoration:line-through}
+.mini-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.goal-row .dot,.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--seal)}
+.empty-card{color:var(--ink-faint);font-size:14px;padding:6px 0;line-height:1.6}
+.group{margin-bottom:26px}
+.group-head{display:flex;align-items:center;gap:9px;font-family:'Fraunces',serif;font-size:15px;color:var(--ink-soft);margin-bottom:10px;padding-left:2px}
+.list{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
+.row-main{flex:1;min-width:0;cursor:pointer}
+.row-title{font-size:15.5px;display:flex;align-items:center;gap:8px}
+.row-title.struck{color:var(--ink-faint);text-decoration:line-through}
+.row-sub{font-size:12.5px;color:var(--ink-faint);margin-top:3px;display:flex;align-items:center;gap:5px}
+.row-actions{display:flex;gap:6px;align-items:center;margin-top:12px}
+.q-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+.q-card{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--seal);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow)}
+.q-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.q-dates{font-size:12px;color:var(--ink-faint)}
+.q-title{font-size:19px;line-height:1.25}
+.q-desc{font-size:13.5px;color:var(--ink-soft);margin:8px 0 14px;line-height:1.5}
+.progress{height:6px;background:var(--paper-2);border-radius:4px;overflow:hidden;margin-top:12px}
+.progress-fill{height:100%;border-radius:4px;transition:width .4s}
+.q-meta{margin-top:8px}
+.date-strip{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;margin-bottom:18px;box-shadow:var(--shadow)}
+.date-strip-label{text-align:center;font-size:16px;display:flex;flex-direction:column;gap:2px}
+.date-strip-label .text-link{font-size:12px}
+.gantt-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--card);box-shadow:var(--shadow)}
+.gantt{min-width:680px;padding:14px 18px 18px}
+.gantt-axis{position:relative;height:20px;margin-left:160px;border-bottom:1px dashed var(--line);margin-bottom:10px}
+.gantt-tick{position:absolute;transform:translateX(-50%);font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em}
+.gantt-body{position:relative}
+.gantt-today{position:absolute;top:-4px;bottom:0;width:0;border-left:2px dotted var(--seal);z-index:3}
+.gantt-today span{position:absolute;top:-2px;left:4px;font-size:10px;color:var(--seal);text-transform:uppercase;letter-spacing:.1em}
+.gantt-row{display:flex;align-items:center;height:34px}
+.gantt-row.indent .gantt-label{padding-left:16px;color:var(--ink-soft);font-size:13px}
+.gantt-label{width:160px;flex-shrink:0;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:10px}
+.gantt-track{position:relative;flex:1;height:100%}
+.gantt-bar{position:absolute;top:50%;transform:translateY(-50%);height:18px;border-radius:9px;display:flex;align-items:center;padding:0 8px;min-width:6px;opacity:.92}
+.gantt-bar.k-quarter{height:22px;border-radius:11px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.gantt-bar.done{opacity:.45}
+.gantt-bar-date{font-size:10px;color:#fff;white-space:nowrap;overflow:hidden}
+.ledger{display:flex;flex-direction:column;gap:2px;border-left:2px solid var(--line);margin-left:8px}
+.ledger-item{display:flex;gap:16px;padding:14px 14px 14px 22px;position:relative;cursor:pointer;border-radius:0 10px 10px 0;transition:.15s}
+.ledger-item:hover{background:rgba(168,127,62,.07)}
+.ledger-item::before{content:'';position:absolute;left:-7px;top:20px;width:10px;height:10px;border-radius:50%;background:var(--gold);border:2px solid var(--paper)}
+.ledger-date{font-size:12px;color:var(--ink-faint);width:54px;flex-shrink:0;padding-top:2px;text-transform:uppercase;letter-spacing:.06em}
+.ledger-main{flex:1;min-width:0}
+.ledger-title{font-family:'Fraunces',serif;font-size:17px}
+.ledger-choice{font-size:14px;margin-top:4px}
+.ledger-rationale{font-size:13.5px;color:var(--ink-soft);margin:6px 0 0;line-height:1.55}
+.reflections{columns:2;column-gap:18px}
+.refl-card{break-inside:avoid;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin-bottom:18px;box-shadow:var(--shadow);position:relative;cursor:pointer;transition:.15s}
+.refl-card:hover{border-color:var(--ink-faint)}
+.refl-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.refl-date{font-size:12px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em}
+.refl-title{font-family:'Fraunces',serif;font-size:17px;margin-bottom:6px}
+.refl-body{font-size:14.5px;line-height:1.6;color:var(--ink-soft);white-space:pre-wrap;margin:0}
+.refl-del{position:absolute;top:12px;right:10px;opacity:0;transition:.15s}
+.refl-card:hover .refl-del{opacity:1}
+.link-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.link-badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--ink-soft);background:var(--paper-2);border-radius:6px;padding:3px 8px}
+.modal-scrim{position:fixed;inset:0;background:rgba(34,31,24,.42);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:18px;z-index:50}
+.modal{background:var(--paper);border:1px solid var(--line);border-radius:18px;width:100%;max-width:480px;max-height:90vh;overflow:auto;box-shadow:0 24px 60px rgba(34,31,24,.28)}
+.modal.wide{max-width:600px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding:20px 22px 0}
+.modal-head h3{font-size:21px}
+.modal-body{padding:18px 22px 22px}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.form{display:flex;flex-direction:column;gap:15px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field>span{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-faint)}
+.field input,.field textarea,.field select{font-family:'Spectral',serif;font-size:15px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:10px 12px;width:100%;resize:vertical}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--seal)}
+.field-row{display:flex;gap:12px}.field-row .field{flex:1}.field.grow{flex:2}
+.field.checkbox{flex-direction:row;align-items:center;gap:9px}
+.field.checkbox input{width:auto}.field.checkbox span{text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)}
+.swatches{display:flex;gap:8px}
+.swatch{width:28px;height:28px;border-radius:50%;border:2px solid transparent}
+.swatch.on{box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--ink)}
+.mood-row,.linkpicker{display:flex;flex-wrap:wrap;gap:8px}
+.mood-chip{padding:7px 13px;border-radius:20px;border:1px solid var(--line);background:var(--card);font-family:'Spectral',serif;font-size:13.5px;color:var(--ink-soft)}
+.mood-chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.linkpicker{max-height:200px;overflow:auto}
+.link-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:9px;border:1px solid var(--line);background:var(--card);font-family:'Spectral',serif;font-size:13px;color:var(--ink-soft)}
+.link-chip.on{border-color:var(--seal);background:rgba(155,51,34,.07);color:var(--ink)}
+.link-chip-label{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty{padding:60px 0;text-align:center;color:var(--ink-faint);font-size:15px}
+.auth-wrap{display:grid;place-items:center;padding:24px}
+.auth-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:34px 30px;width:100%;max-width:380px;box-shadow:var(--shadow);text-align:center}
+.auth-card .seal{margin:0 auto 14px}
+.auth-title{font-size:28px}
+.auth-sub{color:var(--ink-faint);font-size:14px;margin:4px 0 22px}
+.auth-card .form{text-align:left}
+.auth-err{color:var(--seal);font-size:13px;margin:12px 0 0;text-align:left}
+.auth-msg{color:var(--celadon);font-size:13px;margin:12px 0 0;text-align:left}
+.splash-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;max-width:560px;margin:0 auto}
+.splash-wrap h1{font-size:30px;margin-bottom:8px}
+.splash-lead{color:var(--ink-soft);font-size:15px;line-height:1.6;margin:0 0 22px;max-width:44ch}
+.setup-list{text-align:left;font-size:14.5px;line-height:1.7;color:var(--ink-soft);max-width:46ch}
+.setup-list code{background:var(--paper-2);padding:1px 6px;border-radius:5px;font-size:13px}
+.setup-card{max-width:420px}
+.setup-card .auth-sub{margin-bottom:20px}
+.setup-foot{font-size:12.5px;color:var(--ink-faint);line-height:1.6;margin:16px 0 0;text-align:left}
+/* calendar */
+.cal-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.cal-month{font-family:'Fraunces',serif;font-size:20px;min-width:150px;text-align:center}
+.cal-today{margin-left:auto}
+.cal-quarters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.cal-qchip{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:20px;border:1px solid var(--line);background:var(--card);font-family:'Spectral',serif;font-size:13px}
+.cal-qrange{font-size:11px;opacity:.7}
+.cal-grid{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--card);box-shadow:var(--shadow)}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);background:var(--paper-2)}
+.cal-dow span{padding:8px 6px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);text-align:center}
+.cal-week{border-top:1px solid var(--line)}
+.cal-bars{display:flex;flex-direction:column;gap:2px;padding:3px 3px 0}
+.cal-bar-lane{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-bar{grid-row:1;border:none;border-radius:5px;padding:2px 7px;font-size:11px;color:#fff;font-family:'Spectral',serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;opacity:.92;min-width:0;cursor:pointer}
+.cal-bar.done{opacity:.5;text-decoration:line-through}
+.cal-bar-more{font-size:10px;color:var(--ink-faint);padding:0 4px}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal-cell{min-height:74px;border-right:1px solid var(--line);padding:4px 5px 6px;cursor:pointer;display:flex;flex-direction:column;gap:3px;transition:background .12s}
+.cal-cell:last-child{border-right:none}
+.cal-cell:hover{background:rgba(155,51,34,.04)}
+.cal-cell.other{background:rgba(0,0,0,.015)}
+.cal-cell.other .cal-num{color:var(--ink-faint);opacity:.5}
+.cal-cell.today .cal-num{background:var(--seal);color:#fff;border-radius:50%;width:22px;height:22px;display:grid;place-items:center}
+.cal-num{font-size:12.5px;color:var(--ink-soft);font-weight:500}
+.cal-chips{display:flex;flex-direction:column;gap:2px;min-width:0}
+.cal-chip{display:flex;align-items:center;gap:4px;border:none;background:var(--paper-2);border-radius:5px;padding:2px 5px;font-size:11px;font-family:'Spectral',serif;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;min-width:0;cursor:pointer}
+.cal-chip-dot{width:6px;height:6px;border-radius:50%;background:var(--ink-faint);flex-shrink:0}
+.cal-chip.s-doing .cal-chip-dot{background:var(--gold)}
+.cal-chip.s-done{color:var(--ink-faint);text-decoration:line-through}
+.cal-chip.s-done .cal-chip-dot{background:var(--celadon)}
+.cal-chip-more{font-size:10px;color:var(--ink-faint);padding-left:5px}
+.add-choices{display:flex;flex-direction:column;gap:10px}
+.add-choice{display:flex;align-items:center;gap:13px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card);text-align:left;color:var(--ink);transition:.15s}
+.add-choice:hover{border-color:var(--seal);background:rgba(155,51,34,.04)}
+.add-choice div{display:flex;flex-direction:column}
+.add-choice strong{font-size:15px;font-weight:500}
+.add-choice span{font-size:12.5px;color:var(--ink-faint)}
+.danger-text{color:var(--seal)}
+/* segmented month/week toggle */
+.seg{display:inline-flex;background:var(--paper-2);border-radius:9px;padding:3px;gap:2px}
+.seg-btn{border:none;background:none;padding:6px 13px;border-radius:7px;font-family:'Spectral',serif;font-size:13.5px;color:var(--ink-soft)}
+.seg-btn.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(34,31,24,.12)}
+/* drop highlight */
+.cal-cell.drop,.wk-day.drop{background:rgba(155,51,34,.1);box-shadow:inset 0 0 0 2px var(--seal)}
+.cal-chip-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.cal-chip{touch-action:none}
+/* drag ghost */
+.drag-ghost{position:fixed;z-index:200;pointer-events:none;transform:translate(8px,8px);background:var(--seal);color:#fff;font-family:'Spectral',serif;font-size:12px;padding:5px 10px;border-radius:7px;box-shadow:0 8px 20px rgba(34,31,24,.3);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* status dot */
+.sd{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--ink-faint)}
+.sd.s-doing{background:var(--gold)}
+.sd.s-done{background:var(--celadon)}
+/* week view */
+.wk-weeklies{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+.wk-weekly{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-left:4px solid var(--ink-faint);border-radius:10px;background:var(--card);padding:10px 13px;font-family:'Spectral',serif;font-size:14.5px;color:var(--ink);box-shadow:var(--shadow);text-align:left}
+.wk-weekly.done{color:var(--ink-faint);text-decoration:line-through}
+.wk-weekly-range{margin-left:auto;font-size:12px;color:var(--ink-faint)}
+.wk-days{display:flex;flex-direction:column;gap:8px}
+.wk-day{border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+.wk-day.today{border-color:var(--seal)}
+.wk-day-head{display:flex;align-items:center;gap:10px;padding:9px 13px;background:var(--paper-2)}
+.wk-day-name{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint)}
+.wk-day-num{font-family:'Fraunces',serif;font-size:17px}
+.wk-day-num.today{background:var(--seal);color:#fff;border-radius:50%;width:26px;height:26px;display:grid;place-items:center;font-size:14px}
+.wk-add{margin-left:auto;display:grid;place-items:center;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink-faint)}
+.wk-add:hover{color:var(--seal);border-color:var(--seal)}
+.wk-tasks{display:flex;flex-direction:column;gap:6px;padding:10px 13px}
+.wk-task{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:9px;background:var(--card);padding:8px 11px;font-family:'Spectral',serif;font-size:14.5px;color:var(--ink);text-align:left;touch-action:none}
+.wk-task.s-done{color:var(--ink-faint);text-decoration:line-through}
+.wk-status{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);flex-shrink:0;color:var(--ink-faint)}
+.wk-task.s-doing .wk-status{color:var(--gold);border-color:var(--gold)}
+.wk-task.s-done .wk-status{color:#fff;background:var(--celadon);border-color:var(--celadon)}
+.wk-empty{color:var(--ink-faint);font-size:13px;cursor:pointer;padding:2px}
+/* projects */
+.pj-list{display:flex;flex-direction:column;gap:18px}
+.pj-card{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--seal);border-radius:var(--r);padding:16px 20px;box-shadow:var(--shadow)}
+.pj-head{display:flex;align-items:center;gap:11px}
+.pj-toggle{border:none;background:none;color:var(--ink-faint);display:grid;place-items:center;padding:2px}
+.pj-head-main{flex:1;min-width:0}
+.pj-title{font-size:19px}
+.pj-meta{font-size:12.5px;color:var(--ink-faint);margin-top:2px}
+.pj-desc{font-size:13.5px;color:var(--ink-soft);margin:10px 0 0;line-height:1.5}
+.pj-card .progress{margin-top:12px}
+.pj-tree{margin-top:14px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:2px}
+.pj-empty{font-size:13px;color:var(--ink-faint);padding:4px 0}
+.pj-row{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer}
+.pj-row:hover{background:rgba(155,51,34,.05)}
+.pj-row.d0{margin-left:0}.pj-row.d1{margin-left:22px}.pj-row.d2{margin-left:44px}
+.pj-row-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14.5px}
+.pj-row-title.struck{color:var(--ink-faint);text-decoration:line-through}
+.pj-add{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;margin-top:6px;border:1px dashed var(--line);background:none;border-radius:8px;padding:6px 11px;font-family:'Spectral',serif;font-size:13px;color:var(--ink-soft)}
+.pj-add:hover{border-color:var(--seal);color:var(--seal)}
+/* gantt additions */
+.gantt-toggle{flex-direction:row;align-items:center;gap:7px}
+.gantt-toggle span{text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink-soft)}
+.gantt-grouphead{font-family:'Fraunces',serif;font-size:13px;color:var(--ink-faint);padding:8px 0 4px;text-transform:uppercase;letter-spacing:.08em}
+.gantt-row.lvl0 .gantt-label{font-weight:500}
+.gantt-row.lvl1 .gantt-label{padding-left:14px;font-size:13px}
+.gantt-row.lvl2 .gantt-label{padding-left:28px;font-size:12.5px;color:var(--ink-soft)}
+.gantt-row.lvl3 .gantt-label{padding-left:42px;font-size:12px;color:var(--ink-faint)}
+.gantt-bar.k-project{height:22px;border-radius:11px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
+.gantt-bar.k-day{height:13px;border-radius:4px;min-width:13px}
+.gantt-nodate{font-size:11px;color:var(--ink-faint);font-style:italic}
+.botnav{display:none}
+@media(max-width:860px){
+.root{display:block;padding-bottom:74px}
+.sidebar{display:none}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(244,239,227,.9);backdrop-filter:blur(8px);z-index:20}
+.topbar-title{font-family:'Fraunces',serif;font-size:20px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.canvas{padding:22px 18px 40px}
+.dash-grid{grid-template-columns:1fr}.span-2{grid-column:span 1}
+.dash-hero h1{font-size:30px}.sec-head h2{font-size:23px}
+.reflections{columns:1}
+.cal-cell{min-height:58px;padding:3px 3px 5px}
+.cal-num{font-size:11px}
+.cal-chip,.cal-bar{font-size:9.5px;padding:1px 4px}
+.cal-dow span{font-size:9px;padding:6px 2px}
+.cal-month{font-size:17px;min-width:120px}
+.botnav{display:flex;position:fixed;bottom:0;left:0;right:0;background:rgba(251,248,240,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:6px 4px;z-index:40;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.botnav::-webkit-scrollbar{display:none}
+.bot-link{flex:0 0 auto;min-width:62px;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;padding:6px 2px;color:var(--ink-faint);font-size:10px;font-family:'Spectral',serif}
+.bot-link.active{color:var(--seal)}
+.sec-head{flex-wrap:wrap}
+}
+@media(max-width:420px){.bot-link span{font-size:9px}.field-row{flex-direction:column}}
+`);
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(/* @__PURE__ */ React.createElement(Root, null));
+})();
+
+</script>
+</body>
+</html>
