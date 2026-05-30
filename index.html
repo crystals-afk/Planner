@@ -65,6 +65,8 @@
   var Target = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "9" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "5" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "1" }));
   var CalendarRange = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "4", width: "18", height: "17", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M3 9h18M8 2v4M16 2v4M7 14h4M13 17h4" }));
   var CalendarDays = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "4", width: "18", height: "17", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M3 9h18M8 2v4M16 2v4M7 13h.01M12 13h.01M17 13h.01M7 17h.01M12 17h.01M17 17h.01" }));
+  var Layers = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M12 2l9 5-9 5-9-5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5" }));
+  var ChevronDown = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M6 9l6 6 6-6" }));
   var ListChecks = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M3 5l2 2 3-3M3 12l2 2 3-3M3 19l2 2 3-3M11 5h10M11 12h10M11 19h10" }));
   var GitBranch = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "3", x2: "6", y2: "15" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "6", r: "3" }), /* @__PURE__ */ React.createElement("circle", { cx: "6", cy: "18", r: "3" }), /* @__PURE__ */ React.createElement("path", { d: "M18 9a9 9 0 0 1-9 9" }));
   var Scale = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M12 3v18M7 21h10M5 7h14M5 7l-3 6a3 3 0 0 0 6 0zM19 7l-3 6a3 3 0 0 0 6 0z" }));
@@ -97,7 +99,7 @@
     { id: "done", label: "Done", icon: CheckCircle2 }
   ];
   var statusMeta = (s) => STATUSES.find((x) => x.id === s) || STATUSES[0];
-  var emptyData = () => ({ quarters: [], weeks: [], days: [], decisions: [], reflections: [] });
+  var emptyData = () => ({ projects: [], quarters: [], weeks: [], days: [], decisions: [], reflections: [] });
   function Root() {
     const [session, setSession] = useState(null);
     const [ready, setReady] = useState(false);
@@ -239,6 +241,7 @@
     }, [persist]);
     const nav = [
       { id: "dashboard", label: "Today", icon: LayoutGrid },
+      { id: "projects", label: "Projects", icon: Layers },
       { id: "calendar", label: "Calendar", icon: CalendarDays },
       { id: "quarters", label: "Quarters", icon: Target },
       { id: "weeks", label: "Weekly", icon: CalendarRange },
@@ -247,7 +250,7 @@
       { id: "decisions", label: "Decisions", icon: Scale },
       { id: "reflections", label: "Reflect", icon: NotebookPen }
     ];
-    return /* @__PURE__ */ React.createElement("div", { className: "root" }, /* @__PURE__ */ React.createElement("aside", { className: "sidebar" }, /* @__PURE__ */ React.createElement("div", { className: "brand" }, /* @__PURE__ */ React.createElement("span", { className: "seal" }, "\u5370"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "brand-title" }, "Studio"), /* @__PURE__ */ React.createElement("div", { className: "brand-sub" }, "planner & ledger"))), /* @__PURE__ */ React.createElement("nav", { className: "side-nav" }, nav.map((n) => /* @__PURE__ */ React.createElement("button", { key: n.id, className: "side-link" + (view === n.id ? " active" : ""), onClick: () => setView(n.id) }, /* @__PURE__ */ React.createElement(n.icon, { size: 17, strokeWidth: 1.8 }), /* @__PURE__ */ React.createElement("span", null, n.label)))), /* @__PURE__ */ React.createElement("div", { className: "side-foot" }, /* @__PURE__ */ React.createElement(SyncPill, { sync, onSync: () => load(false) }), /* @__PURE__ */ React.createElement("button", { className: "side-out", onClick: () => sb.auth.signOut(), title: "Sign out" }, /* @__PURE__ */ React.createElement(LogOut, { size: 16 })))), /* @__PURE__ */ React.createElement("main", { className: "main" }, /* @__PURE__ */ React.createElement("header", { className: "topbar" }, /* @__PURE__ */ React.createElement("div", { className: "topbar-title" }, nav.find((n) => n.id === view)?.label), /* @__PURE__ */ React.createElement("div", { className: "topbar-right" }, /* @__PURE__ */ React.createElement(SyncPill, { sync, onSync: () => load(false), compact: true }), /* @__PURE__ */ React.createElement("button", { className: "icon-btn", onClick: () => sb.auth.signOut() }, /* @__PURE__ */ React.createElement(LogOut, { size: 17 })))), /* @__PURE__ */ React.createElement("div", { className: "canvas" }, !loaded ? /* @__PURE__ */ React.createElement("div", { className: "empty" }, "Opening your studio\u2026") : /* @__PURE__ */ React.createElement(React.Fragment, null, view === "dashboard" && /* @__PURE__ */ React.createElement(Dashboard, { data, update, setView }), view === "calendar" && /* @__PURE__ */ React.createElement(CalendarView, { data, update }), view === "quarters" && /* @__PURE__ */ React.createElement(Quarters, { data, update }), view === "weeks" && /* @__PURE__ */ React.createElement(Weeks, { data, update }), view === "days" && /* @__PURE__ */ React.createElement(Days, { data, update }), view === "gantt" && /* @__PURE__ */ React.createElement(Gantt, { data }), view === "decisions" && /* @__PURE__ */ React.createElement(Decisions, { data, update }), view === "reflections" && /* @__PURE__ */ React.createElement(Reflections, { data, update })))), /* @__PURE__ */ React.createElement("nav", { className: "botnav" }, nav.map((n) => /* @__PURE__ */ React.createElement("button", { key: n.id, className: "bot-link" + (view === n.id ? " active" : ""), onClick: () => setView(n.id) }, /* @__PURE__ */ React.createElement(n.icon, { size: 19, strokeWidth: 1.8 }), /* @__PURE__ */ React.createElement("span", null, n.label)))));
+    return /* @__PURE__ */ React.createElement("div", { className: "root" }, /* @__PURE__ */ React.createElement("aside", { className: "sidebar" }, /* @__PURE__ */ React.createElement("div", { className: "brand" }, /* @__PURE__ */ React.createElement("span", { className: "seal" }, "\u5370"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "brand-title" }, "Studio"), /* @__PURE__ */ React.createElement("div", { className: "brand-sub" }, "planner & ledger"))), /* @__PURE__ */ React.createElement("nav", { className: "side-nav" }, nav.map((n) => /* @__PURE__ */ React.createElement("button", { key: n.id, className: "side-link" + (view === n.id ? " active" : ""), onClick: () => setView(n.id) }, /* @__PURE__ */ React.createElement(n.icon, { size: 17, strokeWidth: 1.8 }), /* @__PURE__ */ React.createElement("span", null, n.label)))), /* @__PURE__ */ React.createElement("div", { className: "side-foot" }, /* @__PURE__ */ React.createElement(SyncPill, { sync, onSync: () => load(false) }), /* @__PURE__ */ React.createElement("button", { className: "side-out", onClick: () => sb.auth.signOut(), title: "Sign out" }, /* @__PURE__ */ React.createElement(LogOut, { size: 16 })))), /* @__PURE__ */ React.createElement("main", { className: "main" }, /* @__PURE__ */ React.createElement("header", { className: "topbar" }, /* @__PURE__ */ React.createElement("div", { className: "topbar-title" }, nav.find((n) => n.id === view)?.label), /* @__PURE__ */ React.createElement("div", { className: "topbar-right" }, /* @__PURE__ */ React.createElement(SyncPill, { sync, onSync: () => load(false), compact: true }), /* @__PURE__ */ React.createElement("button", { className: "icon-btn", onClick: () => sb.auth.signOut() }, /* @__PURE__ */ React.createElement(LogOut, { size: 17 })))), /* @__PURE__ */ React.createElement("div", { className: "canvas" }, !loaded ? /* @__PURE__ */ React.createElement("div", { className: "empty" }, "Opening your studio\u2026") : /* @__PURE__ */ React.createElement(React.Fragment, null, view === "dashboard" && /* @__PURE__ */ React.createElement(Dashboard, { data, update, setView }), view === "projects" && /* @__PURE__ */ React.createElement(Projects, { data, update }), view === "calendar" && /* @__PURE__ */ React.createElement(CalendarView, { data, update }), view === "quarters" && /* @__PURE__ */ React.createElement(Quarters, { data, update }), view === "weeks" && /* @__PURE__ */ React.createElement(Weeks, { data, update }), view === "days" && /* @__PURE__ */ React.createElement(Days, { data, update }), view === "gantt" && /* @__PURE__ */ React.createElement(Gantt, { data }), view === "decisions" && /* @__PURE__ */ React.createElement(Decisions, { data, update }), view === "reflections" && /* @__PURE__ */ React.createElement(Reflections, { data, update })))), /* @__PURE__ */ React.createElement("nav", { className: "botnav" }, nav.map((n) => /* @__PURE__ */ React.createElement("button", { key: n.id, className: "bot-link" + (view === n.id ? " active" : ""), onClick: () => setView(n.id) }, /* @__PURE__ */ React.createElement(n.icon, { size: 19, strokeWidth: 1.8 }), /* @__PURE__ */ React.createElement("span", null, n.label)))));
   }
   function SyncPill({ sync, onSync, compact }) {
     const text = sync === "saving" ? "Saving\u2026" : sync === "saved" ? "Saved" : sync === "loading" ? "Syncing\u2026" : "Synced";
@@ -340,6 +343,159 @@
     const back = (d.getDay() + 6) % 7;
     d.setDate(d.getDate() - back);
     return d.toISOString().slice(0, 10);
+  }
+  var PCOLORS = ["#9B3322", "#4A6C8C", "#7C9070", "#B08D4F", "#7A5C84", "#3F6F63", "#A8552F", "#5C6B7A"];
+  function quarterById(data, id) {
+    return data.quarters.find((q) => q.id === id);
+  }
+  function effProjectOfQuarter(q) {
+    return q ? q.projectId || null : null;
+  }
+  function effProjectOfWeek(data, w) {
+    if (!w) return null;
+    if (w.projectId) return w.projectId;
+    if (w.quarterId) return effProjectOfQuarter(quarterById(data, w.quarterId));
+    return null;
+  }
+  function QuarterProjectSelect({ data, value, onChange }) {
+    return /* @__PURE__ */ React.createElement("select", { value: value || "", onChange: (e) => onChange(e.target.value || null) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 no project \u2014"), data.projects.map((p) => /* @__PURE__ */ React.createElement("option", { key: p.id, value: p.id }, p.title || "Untitled project")));
+  }
+  function WeekParentSelect({ data, value, onChange }) {
+    const v = value.quarterId ? "q:" + value.quarterId : value.projectId ? "p:" + value.projectId : "";
+    return /* @__PURE__ */ React.createElement("select", { value: v, onChange: (e) => {
+      const val = e.target.value;
+      if (!val) onChange({ quarterId: null, projectId: null });
+      else if (val[0] === "q") onChange({ quarterId: val.slice(2), projectId: null });
+      else onChange({ projectId: val.slice(2), quarterId: null });
+    } }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 none \u2014"), data.quarters.length > 0 && /* @__PURE__ */ React.createElement("optgroup", { label: "Under a quarterly goal" }, data.quarters.map((q) => /* @__PURE__ */ React.createElement("option", { key: q.id, value: "q:" + q.id }, q.title || "Untitled"))), data.projects.length > 0 && /* @__PURE__ */ React.createElement("optgroup", { label: "Directly under a project" }, data.projects.map((p) => /* @__PURE__ */ React.createElement("option", { key: p.id, value: "p:" + p.id }, p.title || "Untitled"))));
+  }
+  function DayParentSelect({ data, value, onChange }) {
+    const v = value.weekId ? "w:" + value.weekId : value.projectId ? "p:" + value.projectId : "";
+    return /* @__PURE__ */ React.createElement("select", { value: v, onChange: (e) => {
+      const val = e.target.value;
+      if (!val) onChange({ weekId: null, projectId: null });
+      else if (val[0] === "w") onChange({ weekId: val.slice(2), projectId: null });
+      else onChange({ projectId: val.slice(2), weekId: null });
+    } }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 none \u2014"), data.weeks.length > 0 && /* @__PURE__ */ React.createElement("optgroup", { label: "Under a weekly task" }, data.weeks.map((w) => /* @__PURE__ */ React.createElement("option", { key: w.id, value: "w:" + w.id }, w.title || "Untitled"))), data.projects.length > 0 && /* @__PURE__ */ React.createElement("optgroup", { label: "Directly under a project" }, data.projects.map((p) => /* @__PURE__ */ React.createElement("option", { key: p.id, value: "p:" + p.id }, p.title || "Untitled"))));
+  }
+  function Projects({ data, update }) {
+    const [editingProject, setEditingProject] = useState(null);
+    const [editingTask, setEditingTask] = useState(null);
+    const [addForProject, setAddForProject] = useState(null);
+    const [open, setOpen] = useState({});
+    const saveProject = (p) => {
+      update((dt) => {
+        const i = dt.projects.findIndex((x) => x.id === p.id);
+        if (i >= 0) dt.projects[i] = p;
+        else dt.projects.push(p);
+        return dt;
+      });
+      setEditingProject(null);
+    };
+    const delProject = (id) => update((dt) => {
+      dt.projects = dt.projects.filter((x) => x.id !== id);
+      dt.quarters.forEach((q) => {
+        if (q.projectId === id) q.projectId = null;
+      });
+      dt.weeks.forEach((w) => {
+        if (w.projectId === id) w.projectId = null;
+      });
+      dt.days.forEach((d) => {
+        if (d.projectId === id) d.projectId = null;
+      });
+      return dt;
+    });
+    const saveTask = (kind, item) => {
+      update((dt) => {
+        const arr = kind === "quarter" ? dt.quarters : kind === "week" ? dt.weeks : dt.days;
+        const i = arr.findIndex((x) => x.id === item.id);
+        if (i >= 0) arr[i] = item;
+        else arr.push(item);
+        return dt;
+      });
+      setEditingTask(null);
+    };
+    const delTask = (kind, id) => update((dt) => {
+      if (kind === "quarter") {
+        dt.quarters = dt.quarters.filter((x) => x.id !== id);
+        dt.weeks.forEach((w) => {
+          if (w.quarterId === id) w.quarterId = null;
+        });
+      } else if (kind === "week") {
+        dt.weeks = dt.weeks.filter((x) => x.id !== id);
+        dt.days.forEach((d) => {
+          if (d.weekId === id) d.weekId = null;
+        });
+      } else dt.days = dt.days.filter((x) => x.id !== id);
+      return dt;
+    });
+    const newProject = () => ({ id: uid(), title: "", description: "", color: PCOLORS[data.projects.length % PCOLORS.length], status: "todo" });
+    const newUnder = (kind, projectId) => {
+      if (kind === "quarter") return { id: uid(), title: "", description: "", startDate: todayISO(), endDate: addDaysISO(todayISO(), 90), status: "todo", color: QCOLORS[data.quarters.length % QCOLORS.length], projectId };
+      if (kind === "week") return { id: uid(), title: "", quarterId: null, projectId, startDate: todayISO(), endDate: addDaysISO(todayISO(), 6), status: "todo", notes: "" };
+      return { id: uid(), title: "", weekId: null, projectId, date: todayISO(), status: "todo", priority: "normal" };
+    };
+    const descendants = (pid) => {
+      const qs = data.quarters.filter((q) => q.projectId === pid);
+      const directWeeks = data.weeks.filter((w) => w.projectId === pid && !w.quarterId);
+      const directDays = data.days.filter((d) => d.projectId === pid && !d.weekId);
+      const all = [];
+      qs.forEach((q) => {
+        all.push(q);
+        data.weeks.filter((w) => w.quarterId === q.id).forEach((w) => {
+          all.push(w);
+          data.days.filter((d) => d.weekId === w.id).forEach((d) => all.push(d));
+        });
+      });
+      directWeeks.forEach((w) => {
+        all.push(w);
+        data.days.filter((d) => d.weekId === w.id).forEach((d) => all.push(d));
+      });
+      directDays.forEach((d) => all.push(d));
+      return { qs, directWeeks, directDays, all };
+    };
+    const spanOf = (items) => {
+      const starts = [], ends = [];
+      items.forEach((it) => {
+        const s = it.date || it.startDate;
+        const e = it.date || it.endDate;
+        if (s) starts.push(s);
+        if (e) ends.push(e);
+      });
+      if (!starts.length) return null;
+      return { start: starts.reduce((a, b) => a < b ? a : b), end: ends.reduce((a, b) => a > b ? a : b) };
+    };
+    const TaskRow = ({ item, kind, depth }) => /* @__PURE__ */ React.createElement("div", { className: "pj-row d" + depth, onClick: () => setEditingTask({ kind, item }) }, /* @__PURE__ */ React.createElement(StatusDot, { status: item.status }), /* @__PURE__ */ React.createElement("span", { className: "pj-row-title" + (item.status === "done" ? " struck" : "") }, item.title || "Untitled"), /* @__PURE__ */ React.createElement(Tag, { tone: kind === "quarter" ? "quarter" : kind === "week" ? "week" : "day" }, kind === "quarter" ? "Q" : kind === "week" ? "W" : "D"));
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
+      SectionHead,
+      {
+        title: "Projects",
+        subtitle: "Umbrella for everything. Quarters, weekly and daily tasks can all live under a project.",
+        action: /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => setEditingProject(newProject()) }, /* @__PURE__ */ React.createElement(Plus, { size: 16 }), "New project")
+      }
+    ), data.projects.length === 0 && /* @__PURE__ */ React.createElement(Empty, null, "No projects yet. A project is the top-level umbrella \u2014 create one, then assign quarters, weekly or daily tasks to it."), /* @__PURE__ */ React.createElement("div", { className: "pj-list" }, data.projects.map((p) => {
+      const { qs, directWeeks, directDays, all } = descendants(p.id);
+      const done = all.filter((x) => x.status === "done").length;
+      const pct = all.length ? Math.round(done / all.length * 100) : p.status === "done" ? 100 : 0;
+      const span = spanOf(all);
+      const isOpen = open[p.id] !== false;
+      return /* @__PURE__ */ React.createElement("div", { key: p.id, className: "pj-card", style: { borderTopColor: p.color } }, /* @__PURE__ */ React.createElement("div", { className: "pj-head" }, /* @__PURE__ */ React.createElement("button", { className: "pj-toggle", onClick: () => setOpen({ ...open, [p.id]: !isOpen }) }, isOpen ? /* @__PURE__ */ React.createElement(ChevronDown, { size: 18 }) : /* @__PURE__ */ React.createElement(ChevronRight, { size: 18 })), /* @__PURE__ */ React.createElement(StatusButton, { value: p.status, onChange: (s) => update((dt) => {
+        dt.projects.find((x) => x.id === p.id).status = s;
+        return dt;
+      }) }), /* @__PURE__ */ React.createElement("div", { className: "pj-head-main" }, /* @__PURE__ */ React.createElement("h3", { className: "pj-title" }, p.title || "Untitled project"), /* @__PURE__ */ React.createElement("div", { className: "pj-meta" }, all.length, " task", all.length === 1 ? "" : "s", " \xB7 ", pct, "%", span ? ` \xB7 ${fmt(span.start)}\u2013${fmt(span.end)}` : "")), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setEditingProject(p) }, "Edit")), p.description && /* @__PURE__ */ React.createElement("p", { className: "pj-desc" }, p.description), /* @__PURE__ */ React.createElement("div", { className: "progress" }, /* @__PURE__ */ React.createElement("div", { className: "progress-fill", style: { width: pct + "%", background: p.color } })), isOpen && /* @__PURE__ */ React.createElement("div", { className: "pj-tree" }, all.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "pj-empty" }, "Nothing assigned yet."), qs.map((q) => /* @__PURE__ */ React.createElement("div", { key: q.id }, /* @__PURE__ */ React.createElement(TaskRow, { item: q, kind: "quarter", depth: 0 }), data.weeks.filter((w) => w.quarterId === q.id).map((w) => /* @__PURE__ */ React.createElement("div", { key: w.id }, /* @__PURE__ */ React.createElement(TaskRow, { item: w, kind: "week", depth: 1 }), data.days.filter((d) => d.weekId === w.id).map((d) => /* @__PURE__ */ React.createElement(TaskRow, { key: d.id, item: d, kind: "day", depth: 2 })))))), directWeeks.map((w) => /* @__PURE__ */ React.createElement("div", { key: w.id }, /* @__PURE__ */ React.createElement(TaskRow, { item: w, kind: "week", depth: 0 }), data.days.filter((d) => d.weekId === w.id).map((d) => /* @__PURE__ */ React.createElement(TaskRow, { key: d.id, item: d, kind: "day", depth: 1 })))), directDays.map((d) => /* @__PURE__ */ React.createElement(TaskRow, { key: d.id, item: d, kind: "day", depth: 0 })), /* @__PURE__ */ React.createElement("button", { className: "pj-add", onClick: () => setAddForProject(p.id) }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }), "Add to this project")));
+    })), editingProject && /* @__PURE__ */ React.createElement(Modal, { title: data.projects.some((x) => x.id === editingProject.id) ? "Edit project" : "New project", onClose: () => setEditingProject(null) }, /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Project"), /* @__PURE__ */ React.createElement("input", { value: editingProject.title, onChange: (e) => setEditingProject({ ...editingProject, title: e.target.value }), placeholder: "e.g. APOE4 tau-seeding study", autoFocus: true })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Description"), /* @__PURE__ */ React.createElement("textarea", { rows: 3, value: editingProject.description, onChange: (e) => setEditingProject({ ...editingProject, description: e.target.value }), placeholder: "The big picture this umbrella covers" })), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Colour"), /* @__PURE__ */ React.createElement("div", { className: "swatches" }, PCOLORS.map((c) => /* @__PURE__ */ React.createElement("button", { key: c, className: "swatch" + (editingProject.color === c ? " on" : ""), style: { background: c }, onClick: () => setEditingProject({ ...editingProject, color: c }) })))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Status"), /* @__PURE__ */ React.createElement("div", { className: "mood-row" }, STATUSES.map((s) => /* @__PURE__ */ React.createElement("button", { key: s.id, className: "mood-chip" + (editingProject.status === s.id ? " on" : ""), onClick: () => setEditingProject({ ...editingProject, status: s.id }) }, s.label))))), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, data.projects.some((x) => x.id === editingProject.id) && /* @__PURE__ */ React.createElement("button", { className: "btn ghost danger-text", onClick: () => {
+      delProject(editingProject.id);
+      setEditingProject(null);
+    } }, "Delete"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }), /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditingProject(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => saveProject(editingProject), disabled: !editingProject.title.trim() }, "Save"))), addForProject && /* @__PURE__ */ React.createElement(Modal, { title: "Add to project", onClose: () => setAddForProject(null) }, /* @__PURE__ */ React.createElement("div", { className: "add-choices" }, /* @__PURE__ */ React.createElement("button", { className: "add-choice", onClick: () => {
+      setEditingTask({ kind: "quarter", item: newUnder("quarter", addForProject) });
+      setAddForProject(null);
+    } }, /* @__PURE__ */ React.createElement(Target, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Quarterly goal"), /* @__PURE__ */ React.createElement("span", null, "A ~3-month goal under this project"))), /* @__PURE__ */ React.createElement("button", { className: "add-choice", onClick: () => {
+      setEditingTask({ kind: "week", item: newUnder("week", addForProject) });
+      setAddForProject(null);
+    } }, /* @__PURE__ */ React.createElement(CalendarRange, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Weekly task"), /* @__PURE__ */ React.createElement("span", null, "Directly under this project"))), /* @__PURE__ */ React.createElement("button", { className: "add-choice", onClick: () => {
+      setEditingTask({ kind: "day", item: newUnder("day", addForProject) });
+      setAddForProject(null);
+    } }, /* @__PURE__ */ React.createElement(ListChecks, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Daily task"), /* @__PURE__ */ React.createElement("span", null, "Directly under this project"))))), editingTask && /* @__PURE__ */ React.createElement(CalEditor, { data, editing: editingTask, setEditing: setEditingTask, onSave: saveTask, onDelete: delTask }));
   }
   function weekStartOf(iso) {
     const d = /* @__PURE__ */ new Date(iso + "T00:00:00");
@@ -547,7 +703,7 @@
     const set = (k, v) => setItem({ ...item, [k]: v });
     const titleOk = kind === "quarter" || kind === "week" ? item.title.trim() : item.title.trim();
     const heading = kind === "quarter" ? "Quarterly goal" : kind === "week" ? "Weekly task" : "Daily task";
-    return /* @__PURE__ */ React.createElement(Modal, { title: heading, onClose: () => setEditing(null) }, /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, kind === "quarter" ? "Goal" : "Task"), /* @__PURE__ */ React.createElement("input", { value: item.title, onChange: (e) => set("title", e.target.value), autoFocus: true, placeholder: kind === "day" ? "e.g. Image PS19/E4 slices" : kind === "week" ? "e.g. Finish AAV titration" : "e.g. Submit manuscript" })), kind === "day" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Date"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.date, onChange: (e) => set("date", e.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Serves weekly task"), /* @__PURE__ */ React.createElement("select", { value: item.weekId || "", onChange: (e) => set("weekId", e.target.value || null) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 none \u2014"), data.weeks.map((w) => /* @__PURE__ */ React.createElement("option", { key: w.id, value: w.id }, w.title || "Untitled")))), /* @__PURE__ */ React.createElement("label", { className: "field checkbox" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: item.priority === "high", onChange: (e) => set("priority", e.target.checked ? "high" : "normal") }), /* @__PURE__ */ React.createElement("span", null, "Mark as priority"))), kind === "week" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Rolls up to"), /* @__PURE__ */ React.createElement("select", { value: item.quarterId || "", onChange: (e) => set("quarterId", e.target.value || null) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 none \u2014"), data.quarters.map((q) => /* @__PURE__ */ React.createElement("option", { key: q.id, value: q.id }, q.title || "Untitled")))), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Start"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.startDate, onChange: (e) => set("startDate", e.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "End"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.endDate, onChange: (e) => set("endDate", e.target.value) })))), kind === "quarter" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Description"), /* @__PURE__ */ React.createElement("textarea", { rows: 2, value: item.description, onChange: (e) => set("description", e.target.value) })), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Start"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.startDate, onChange: (e) => set("startDate", e.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "End"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.endDate, onChange: (e) => set("endDate", e.target.value) }))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Colour"), /* @__PURE__ */ React.createElement("div", { className: "swatches" }, QCOLORS.map((c) => /* @__PURE__ */ React.createElement("button", { key: c, className: "swatch" + (item.color === c ? " on" : ""), style: { background: c }, onClick: () => set("color", c) }))))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Status"), /* @__PURE__ */ React.createElement("div", { className: "mood-row" }, STATUSES.map((s) => /* @__PURE__ */ React.createElement("button", { key: s.id, className: "mood-chip" + (item.status === s.id ? " on" : ""), onClick: () => set("status", s.id) }, s.label))))), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, data[kind === "quarter" ? "quarters" : kind === "week" ? "weeks" : "days"].some((x) => x.id === item.id) && /* @__PURE__ */ React.createElement("button", { className: "btn ghost danger-text", onClick: () => {
+    return /* @__PURE__ */ React.createElement(Modal, { title: heading, onClose: () => setEditing(null) }, /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, kind === "quarter" ? "Goal" : "Task"), /* @__PURE__ */ React.createElement("input", { value: item.title, onChange: (e) => set("title", e.target.value), autoFocus: true, placeholder: kind === "day" ? "e.g. Image PS19/E4 slices" : kind === "week" ? "e.g. Finish AAV titration" : "e.g. Submit manuscript" })), kind === "day" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Date"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.date, onChange: (e) => set("date", e.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Belongs to"), /* @__PURE__ */ React.createElement(DayParentSelect, { data, value: item, onChange: (patch) => setItem({ ...item, ...patch }) })), /* @__PURE__ */ React.createElement("label", { className: "field checkbox" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: item.priority === "high", onChange: (e) => set("priority", e.target.checked ? "high" : "normal") }), /* @__PURE__ */ React.createElement("span", null, "Mark as priority"))), kind === "week" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Belongs to"), /* @__PURE__ */ React.createElement(WeekParentSelect, { data, value: item, onChange: (patch) => setItem({ ...item, ...patch }) })), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Start"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.startDate, onChange: (e) => set("startDate", e.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "End"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.endDate, onChange: (e) => set("endDate", e.target.value) })))), kind === "quarter" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Project"), /* @__PURE__ */ React.createElement(QuarterProjectSelect, { data, value: item.projectId, onChange: (v) => set("projectId", v) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Description"), /* @__PURE__ */ React.createElement("textarea", { rows: 2, value: item.description, onChange: (e) => set("description", e.target.value) })), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Start"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.startDate, onChange: (e) => set("startDate", e.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "End"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.endDate, onChange: (e) => set("endDate", e.target.value) }))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Colour"), /* @__PURE__ */ React.createElement("div", { className: "swatches" }, QCOLORS.map((c) => /* @__PURE__ */ React.createElement("button", { key: c, className: "swatch" + (item.color === c ? " on" : ""), style: { background: c }, onClick: () => set("color", c) }))))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Status"), /* @__PURE__ */ React.createElement("div", { className: "mood-row" }, STATUSES.map((s) => /* @__PURE__ */ React.createElement("button", { key: s.id, className: "mood-chip" + (item.status === s.id ? " on" : ""), onClick: () => set("status", s.id) }, s.label))))), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, data[kind === "quarter" ? "quarters" : kind === "week" ? "weeks" : "days"].some((x) => x.id === item.id) && /* @__PURE__ */ React.createElement("button", { className: "btn ghost danger-text", onClick: () => {
       onDelete(kind, item.id);
       setEditing(null);
     } }, "Delete"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }), /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditing(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => onSave(kind, item), disabled: !titleOk }, "Save")));
@@ -579,11 +735,11 @@
         dt.quarters.find((x) => x.id === q.id).status = s;
         return dt;
       }) }), /* @__PURE__ */ React.createElement("div", { className: "q-dates" }, fmt(q.startDate), " \u2013 ", fmt(q.endDate))), /* @__PURE__ */ React.createElement("h3", { className: "q-title" }, q.title || "Untitled goal"), q.description && /* @__PURE__ */ React.createElement("p", { className: "q-desc" }, q.description), /* @__PURE__ */ React.createElement("div", { className: "progress" }, /* @__PURE__ */ React.createElement("div", { className: "progress-fill", style: { width: pct + "%", background: q.color } })), /* @__PURE__ */ React.createElement("div", { className: "q-meta" }, /* @__PURE__ */ React.createElement("span", { className: "muted small" }, weeks.length, " weekly task", weeks.length === 1 ? "" : "s", " \xB7 ", pct, "%")), /* @__PURE__ */ React.createElement("div", { className: "row-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm", onClick: () => setEditing(q) }, "Edit"), /* @__PURE__ */ React.createElement("button", { className: "icon-btn danger", onClick: () => del(q.id) }, /* @__PURE__ */ React.createElement(Trash2, { size: 15 }))));
-    })), editing && /* @__PURE__ */ React.createElement(Modal, { title: data.quarters.some((x) => x.id === editing.id) ? "Edit goal" : "New quarterly goal", onClose: () => setEditing(null) }, /* @__PURE__ */ React.createElement(QForm, { value: editing, onChange: setEditing }), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditing(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => save(editing), disabled: !editing.title.trim() }, "Save"))));
+    })), editing && /* @__PURE__ */ React.createElement(Modal, { title: data.quarters.some((x) => x.id === editing.id) ? "Edit goal" : "New quarterly goal", onClose: () => setEditing(null) }, /* @__PURE__ */ React.createElement(QForm, { data, value: editing, onChange: setEditing }), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditing(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => save(editing), disabled: !editing.title.trim() }, "Save"))));
   }
-  function QForm({ value, onChange }) {
+  function QForm({ data, value, onChange }) {
     const set = (k, v) => onChange({ ...value, [k]: v });
-    return /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Goal"), /* @__PURE__ */ React.createElement("input", { value: value.title, onChange: (e) => set("title", e.target.value), placeholder: "e.g. Submit the APOE4 tau-seeding manuscript", autoFocus: true })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Description"), /* @__PURE__ */ React.createElement("textarea", { value: value.description, onChange: (e) => set("description", e.target.value), rows: 3, placeholder: "What does success look like?" })), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Start"), /* @__PURE__ */ React.createElement("input", { type: "date", value: value.startDate, onChange: (e) => set("startDate", e.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "End"), /* @__PURE__ */ React.createElement("input", { type: "date", value: value.endDate, onChange: (e) => set("endDate", e.target.value) }))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Colour"), /* @__PURE__ */ React.createElement("div", { className: "swatches" }, QCOLORS.map((c) => /* @__PURE__ */ React.createElement("button", { key: c, className: "swatch" + (value.color === c ? " on" : ""), style: { background: c }, onClick: () => set("color", c) })))));
+    return /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Goal"), /* @__PURE__ */ React.createElement("input", { value: value.title, onChange: (e) => set("title", e.target.value), placeholder: "e.g. Submit the APOE4 tau-seeding manuscript", autoFocus: true })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Project"), /* @__PURE__ */ React.createElement(QuarterProjectSelect, { data, value: value.projectId, onChange: (v) => set("projectId", v) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Description"), /* @__PURE__ */ React.createElement("textarea", { value: value.description, onChange: (e) => set("description", e.target.value), rows: 3, placeholder: "What does success look like?" })), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Start"), /* @__PURE__ */ React.createElement("input", { type: "date", value: value.startDate, onChange: (e) => set("startDate", e.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "End"), /* @__PURE__ */ React.createElement("input", { type: "date", value: value.endDate, onChange: (e) => set("endDate", e.target.value) }))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Colour"), /* @__PURE__ */ React.createElement("div", { className: "swatches" }, QCOLORS.map((c) => /* @__PURE__ */ React.createElement("button", { key: c, className: "swatch" + (value.color === c ? " on" : ""), style: { background: c }, onClick: () => set("color", c) })))));
   }
   function Weeks({ data, update }) {
     const [editing, setEditing] = useState(null);
@@ -625,7 +781,7 @@
         dt.weeks.find((x) => x.id === w.id).status = s;
         return dt;
       }) }), /* @__PURE__ */ React.createElement("div", { className: "row-main", onClick: () => setEditing(w) }, /* @__PURE__ */ React.createElement("div", { className: "row-title" + (w.status === "done" ? " struck" : "") }, w.title || "Untitled"), /* @__PURE__ */ React.createElement("div", { className: "row-sub" }, fmt(w.startDate), " \u2013 ", fmt(w.endDate), dayCount ? ` \xB7 ${dayCount} daily` : "")), /* @__PURE__ */ React.createElement("button", { className: "icon-btn danger", onClick: () => del(w.id) }, /* @__PURE__ */ React.createElement(Trash2, { size: 15 })));
-    })))), editing && /* @__PURE__ */ React.createElement(Modal, { title: data.weeks.some((x) => x.id === editing.id) ? "Edit weekly task" : "New weekly task", onClose: () => setEditing(null) }, /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Task"), /* @__PURE__ */ React.createElement("input", { value: editing.title, onChange: (e) => setEditing({ ...editing, title: e.target.value }), placeholder: "e.g. Finish AAV vector titration", autoFocus: true })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Rolls up to"), /* @__PURE__ */ React.createElement("select", { value: editing.quarterId || "", onChange: (e) => setEditing({ ...editing, quarterId: e.target.value || null }) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 none \u2014"), data.quarters.map((q) => /* @__PURE__ */ React.createElement("option", { key: q.id, value: q.id }, q.title || "Untitled")))), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Start"), /* @__PURE__ */ React.createElement("input", { type: "date", value: editing.startDate, onChange: (e) => setEditing({ ...editing, startDate: e.target.value }) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "End"), /* @__PURE__ */ React.createElement("input", { type: "date", value: editing.endDate, onChange: (e) => setEditing({ ...editing, endDate: e.target.value }) }))), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Notes"), /* @__PURE__ */ React.createElement("textarea", { rows: 2, value: editing.notes, onChange: (e) => setEditing({ ...editing, notes: e.target.value }) }))), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditing(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => save(editing), disabled: !editing.title.trim() }, "Save"))));
+    })))), editing && /* @__PURE__ */ React.createElement(Modal, { title: data.weeks.some((x) => x.id === editing.id) ? "Edit weekly task" : "New weekly task", onClose: () => setEditing(null) }, /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Task"), /* @__PURE__ */ React.createElement("input", { value: editing.title, onChange: (e) => setEditing({ ...editing, title: e.target.value }), placeholder: "e.g. Finish AAV vector titration", autoFocus: true })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Belongs to"), /* @__PURE__ */ React.createElement(WeekParentSelect, { data, value: editing, onChange: (patch) => setEditing({ ...editing, ...patch }) })), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Start"), /* @__PURE__ */ React.createElement("input", { type: "date", value: editing.startDate, onChange: (e) => setEditing({ ...editing, startDate: e.target.value }) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "End"), /* @__PURE__ */ React.createElement("input", { type: "date", value: editing.endDate, onChange: (e) => setEditing({ ...editing, endDate: e.target.value }) }))), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Notes"), /* @__PURE__ */ React.createElement("textarea", { rows: 2, value: editing.notes, onChange: (e) => setEditing({ ...editing, notes: e.target.value }) }))), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditing(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => save(editing), disabled: !editing.title.trim() }, "Save"))));
   }
   function Days({ data, update }) {
     const [editing, setEditing] = useState(null);
@@ -656,21 +812,61 @@
         dt.days.find((x) => x.id === d.id).status = s;
         return dt;
       }) }), /* @__PURE__ */ React.createElement("div", { className: "row-main", onClick: () => setEditing(d) }, /* @__PURE__ */ React.createElement("div", { className: "row-title" + (d.status === "done" ? " struck" : "") }, d.title || "Untitled", " ", d.priority === "high" && /* @__PURE__ */ React.createElement(Tag, { tone: "seal" }, "priority")), week && /* @__PURE__ */ React.createElement("div", { className: "row-sub" }, /* @__PURE__ */ React.createElement(Link2, { size: 11 }), " ", week.title)), /* @__PURE__ */ React.createElement("button", { className: "icon-btn danger", onClick: () => del(d.id) }, /* @__PURE__ */ React.createElement(Trash2, { size: 15 })));
-    })), editing && /* @__PURE__ */ React.createElement(Modal, { title: data.days.some((x) => x.id === editing.id) ? "Edit task" : "New daily task", onClose: () => setEditing(null) }, /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Task"), /* @__PURE__ */ React.createElement("input", { value: editing.title, onChange: (e) => setEditing({ ...editing, title: e.target.value }), placeholder: "e.g. Image PS19/E4 slices", autoFocus: true })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Date"), /* @__PURE__ */ React.createElement("input", { type: "date", value: editing.date, onChange: (e) => setEditing({ ...editing, date: e.target.value }) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Serves weekly task"), /* @__PURE__ */ React.createElement("select", { value: editing.weekId || "", onChange: (e) => setEditing({ ...editing, weekId: e.target.value || null }) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 none \u2014"), data.weeks.map((w) => /* @__PURE__ */ React.createElement("option", { key: w.id, value: w.id }, w.title || "Untitled")))), /* @__PURE__ */ React.createElement("label", { className: "field checkbox" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: editing.priority === "high", onChange: (e) => setEditing({ ...editing, priority: e.target.checked ? "high" : "normal" }) }), /* @__PURE__ */ React.createElement("span", null, "Mark as priority"))), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditing(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => save(editing), disabled: !editing.title.trim() }, "Save"))));
+    })), editing && /* @__PURE__ */ React.createElement(Modal, { title: data.days.some((x) => x.id === editing.id) ? "Edit task" : "New daily task", onClose: () => setEditing(null) }, /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Task"), /* @__PURE__ */ React.createElement("input", { value: editing.title, onChange: (e) => setEditing({ ...editing, title: e.target.value }), placeholder: "e.g. Image PS19/E4 slices", autoFocus: true })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Date"), /* @__PURE__ */ React.createElement("input", { type: "date", value: editing.date, onChange: (e) => setEditing({ ...editing, date: e.target.value }) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Belongs to"), /* @__PURE__ */ React.createElement(DayParentSelect, { data, value: editing, onChange: (patch) => setEditing({ ...editing, ...patch }) })), /* @__PURE__ */ React.createElement("label", { className: "field checkbox" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: editing.priority === "high", onChange: (e) => setEditing({ ...editing, priority: e.target.checked ? "high" : "normal" }) }), /* @__PURE__ */ React.createElement("span", null, "Mark as priority"))), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditing(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => save(editing), disabled: !editing.title.trim() }, "Save"))));
   }
   function Gantt({ data }) {
-    const items = useMemo(() => {
-      const rows = [];
-      data.quarters.forEach((q) => {
-        if (q.startDate && q.endDate) rows.push({ kind: "quarter", id: q.id, label: q.title, start: q.startDate, end: q.endDate, color: q.color, status: q.status });
-        data.weeks.filter((w) => w.quarterId === q.id && w.startDate && w.endDate).forEach((w) => rows.push({ kind: "week", id: w.id, label: w.title, start: w.startDate, end: w.endDate, color: q.color, status: w.status, indent: true }));
+    const [showDays, setShowDays] = useState(false);
+    const rows = useMemo(() => {
+      const out = [];
+      const wDated = (w) => w.startDate && w.endDate;
+      const qDated = (q) => q.startDate && q.endDate;
+      const daysOfWeek = (wid) => data.days.filter((d) => d.weekId === wid && d.date);
+      const pushWeek = (w, color, level) => {
+        out.push({ kind: "week", id: w.id, label: w.title, start: w.startDate, end: w.endDate, color, status: w.status, level });
+        if (showDays) daysOfWeek(w.id).forEach((d) => out.push({ kind: "day", id: d.id, label: d.title, start: d.date, end: d.date, color, status: d.status, level: level + 1 }));
+      };
+      data.projects.forEach((p) => {
+        const qs = data.quarters.filter((q) => q.projectId === p.id);
+        const directWeeks = data.weeks.filter((w) => w.projectId === p.id && !w.quarterId);
+        const directDays = data.days.filter((d) => d.projectId === p.id && !d.weekId && d.date);
+        const spanItems = [];
+        qs.forEach((q) => {
+          if (qDated(q)) spanItems.push([q.startDate, q.endDate]);
+          data.weeks.filter((w) => w.quarterId === q.id && wDated(w)).forEach((w) => spanItems.push([w.startDate, w.endDate]));
+        });
+        directWeeks.forEach((w) => {
+          if (wDated(w)) spanItems.push([w.startDate, w.endDate]);
+        });
+        directDays.forEach((d) => spanItems.push([d.date, d.date]));
+        const start = spanItems.length ? spanItems.reduce((a, b) => b[0] < a ? b[0] : a, spanItems[0][0]) : null;
+        const end = spanItems.length ? spanItems.reduce((a, b) => b[1] > a ? b[1] : a, spanItems[0][1]) : null;
+        out.push({ kind: "project", id: p.id, label: p.title, start, end, color: p.color, status: p.status, level: 0, noBar: !start });
+        qs.forEach((q) => {
+          if (qDated(q)) out.push({ kind: "quarter", id: q.id, label: q.title, start: q.startDate, end: q.endDate, color: q.color, status: q.status, level: 1 });
+          else out.push({ kind: "quarter", id: q.id, label: q.title, color: q.color, status: q.status, level: 1, noBar: true });
+          data.weeks.filter((w) => w.quarterId === q.id && wDated(w)).forEach((w) => pushWeek(w, q.color, 2));
+        });
+        directWeeks.filter(wDated).forEach((w) => pushWeek(w, p.color, 1));
+        directDays.forEach((d) => out.push({ kind: "day", id: d.id, label: d.title, start: d.date, end: d.date, color: p.color, status: d.status, level: 1 }));
       });
-      data.weeks.filter((w) => (!w.quarterId || !data.quarters.some((q) => q.id === w.quarterId)) && w.startDate && w.endDate).forEach((w) => rows.push({ kind: "week", id: w.id, label: w.title, start: w.startDate, end: w.endDate, color: "var(--ink-faint)", status: w.status }));
-      return rows;
-    }, [data]);
-    if (items.length === 0) return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Gantt timeline", subtitle: "Quarters and weekly tasks plotted over time." }), /* @__PURE__ */ React.createElement(Empty, null, "Add quarterly goals or weekly tasks with start & end dates to see them here."));
-    const min = items.reduce((m, i) => i.start < m ? i.start : m, items[0].start);
-    const max = items.reduce((m, i) => i.end > m ? i.end : m, items[0].end);
+      const looseQuarters = data.quarters.filter((q) => !q.projectId);
+      const looseWeeks = data.weeks.filter((w) => !effProjectOfWeek(data, w) && !w.quarterId && wDated(w));
+      if (looseQuarters.length || looseWeeks.length) {
+        out.push({ kind: "group", id: "noproject", label: "No project", level: 0 });
+        looseQuarters.forEach((q) => {
+          if (qDated(q)) out.push({ kind: "quarter", id: q.id, label: q.title, start: q.startDate, end: q.endDate, color: q.color, status: q.status, level: 1 });
+          else out.push({ kind: "quarter", id: q.id, label: q.title, color: q.color, status: q.status, level: 1, noBar: true });
+          data.weeks.filter((w) => w.quarterId === q.id && wDated(w)).forEach((w) => pushWeek(w, q.color, 2));
+        });
+        looseWeeks.forEach((w) => pushWeek(w, "var(--ink-faint)", 1));
+      }
+      return out;
+    }, [data, showDays]);
+    const dated = rows.filter((r) => r.start && r.end);
+    if (rows.length === 0) return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Gantt timeline", subtitle: "Projects, quarters and tasks plotted over time." }), /* @__PURE__ */ React.createElement(Empty, null, "Add projects, quarterly goals, or weekly tasks with dates to see them here."));
+    if (dated.length === 0) return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Gantt timeline", subtitle: "Projects, quarters and tasks plotted over time." }), /* @__PURE__ */ React.createElement(Empty, null, "Your items need start & end dates to appear on the timeline."));
+    const min = dated.reduce((m, i) => i.start < m ? i.start : m, dated[0].start);
+    const max = dated.reduce((m, i) => i.end > m ? i.end : m, dated[0].end);
     const span = Math.max(daysBetween(min, max), 1);
     const today = todayISO();
     const todayPct = Math.min(100, Math.max(0, daysBetween(min, today) / span * 100));
@@ -682,10 +878,20 @@
       ticks.push({ pct: daysBetween(min, iso) / span * 100, label: t.toLocaleDateString(void 0, { month: "short" }) });
       t.setMonth(t.getMonth() + 1);
     }
-    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Gantt timeline", subtitle: "Quarters and weekly tasks plotted over time." }), /* @__PURE__ */ React.createElement("div", { className: "gantt-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "gantt" }, /* @__PURE__ */ React.createElement("div", { className: "gantt-axis" }, ticks.map((tk, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "gantt-tick", style: { left: tk.pct + "%" } }, tk.label))), /* @__PURE__ */ React.createElement("div", { className: "gantt-body" }, today >= min && today <= max && /* @__PURE__ */ React.createElement("div", { className: "gantt-today", style: { left: todayPct + "%" } }, /* @__PURE__ */ React.createElement("span", null, "today")), items.map((it) => {
-      const left = daysBetween(min, it.start) / span * 100;
-      const width = Math.max(daysBetween(it.start, it.end) / span * 100, 1.5);
-      return /* @__PURE__ */ React.createElement("div", { key: it.kind + it.id, className: "gantt-row" + (it.indent ? " indent" : "") }, /* @__PURE__ */ React.createElement("div", { className: "gantt-label", title: it.label }, it.kind === "quarter" ? "\u25C6 " : "", it.label || "Untitled"), /* @__PURE__ */ React.createElement("div", { className: "gantt-track" }, /* @__PURE__ */ React.createElement("div", { className: "gantt-bar k-" + it.kind + (it.status === "done" ? " done" : ""), style: { left: left + "%", width: width + "%", background: it.color } }, /* @__PURE__ */ React.createElement("span", { className: "gantt-bar-date" }, fmt(it.start), "\u2013", fmt(it.end)))));
+    const prefix = { project: "\u25A3 ", quarter: "\u25C6 ", week: "", day: "\xB7 " };
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
+      SectionHead,
+      {
+        title: "Gantt timeline",
+        subtitle: "Projects, quarters and tasks plotted over time.",
+        action: /* @__PURE__ */ React.createElement("label", { className: "field checkbox gantt-toggle" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: showDays, onChange: (e) => setShowDays(e.target.checked) }), /* @__PURE__ */ React.createElement("span", null, "Show daily tasks"))
+      }
+    ), /* @__PURE__ */ React.createElement("div", { className: "gantt-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "gantt" }, /* @__PURE__ */ React.createElement("div", { className: "gantt-axis" }, ticks.map((tk, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "gantt-tick", style: { left: tk.pct + "%" } }, tk.label))), /* @__PURE__ */ React.createElement("div", { className: "gantt-body" }, today >= min && today <= max && /* @__PURE__ */ React.createElement("div", { className: "gantt-today", style: { left: todayPct + "%" } }, /* @__PURE__ */ React.createElement("span", null, "today")), rows.map((it) => {
+      if (it.kind === "group") return /* @__PURE__ */ React.createElement("div", { key: "g" + it.id, className: "gantt-grouphead" }, it.label);
+      const has = it.start && it.end;
+      const left = has ? daysBetween(min, it.start) / span * 100 : 0;
+      const width = has ? Math.max(daysBetween(it.start, it.end) / span * 100, 1.2) : 0;
+      return /* @__PURE__ */ React.createElement("div", { key: it.kind + it.id, className: "gantt-row lvl" + it.level }, /* @__PURE__ */ React.createElement("div", { className: "gantt-label", title: it.label }, prefix[it.kind], it.label || "Untitled"), /* @__PURE__ */ React.createElement("div", { className: "gantt-track" }, has ? /* @__PURE__ */ React.createElement("div", { className: "gantt-bar k-" + it.kind + (it.status === "done" ? " done" : ""), style: { left: left + "%", width: width + "%", background: it.color } }, /* @__PURE__ */ React.createElement("span", { className: "gantt-bar-date" }, it.kind === "day" ? fmt(it.start) : fmt(it.start) + "\u2013" + fmt(it.end))) : /* @__PURE__ */ React.createElement("span", { className: "gantt-nodate" }, "no dates")));
     })))));
   }
   function Decisions({ data, update }) {
@@ -972,6 +1178,36 @@ h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;margin:0;letter-spacing:-.
 .wk-task.s-doing .wk-status{color:var(--gold);border-color:var(--gold)}
 .wk-task.s-done .wk-status{color:#fff;background:var(--celadon);border-color:var(--celadon)}
 .wk-empty{color:var(--ink-faint);font-size:13px;cursor:pointer;padding:2px}
+/* projects */
+.pj-list{display:flex;flex-direction:column;gap:18px}
+.pj-card{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--seal);border-radius:var(--r);padding:16px 20px;box-shadow:var(--shadow)}
+.pj-head{display:flex;align-items:center;gap:11px}
+.pj-toggle{border:none;background:none;color:var(--ink-faint);display:grid;place-items:center;padding:2px}
+.pj-head-main{flex:1;min-width:0}
+.pj-title{font-size:19px}
+.pj-meta{font-size:12.5px;color:var(--ink-faint);margin-top:2px}
+.pj-desc{font-size:13.5px;color:var(--ink-soft);margin:10px 0 0;line-height:1.5}
+.pj-card .progress{margin-top:12px}
+.pj-tree{margin-top:14px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:2px}
+.pj-empty{font-size:13px;color:var(--ink-faint);padding:4px 0}
+.pj-row{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer}
+.pj-row:hover{background:rgba(155,51,34,.05)}
+.pj-row.d0{margin-left:0}.pj-row.d1{margin-left:22px}.pj-row.d2{margin-left:44px}
+.pj-row-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14.5px}
+.pj-row-title.struck{color:var(--ink-faint);text-decoration:line-through}
+.pj-add{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;margin-top:6px;border:1px dashed var(--line);background:none;border-radius:8px;padding:6px 11px;font-family:'Spectral',serif;font-size:13px;color:var(--ink-soft)}
+.pj-add:hover{border-color:var(--seal);color:var(--seal)}
+/* gantt additions */
+.gantt-toggle{flex-direction:row;align-items:center;gap:7px}
+.gantt-toggle span{text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink-soft)}
+.gantt-grouphead{font-family:'Fraunces',serif;font-size:13px;color:var(--ink-faint);padding:8px 0 4px;text-transform:uppercase;letter-spacing:.08em}
+.gantt-row.lvl0 .gantt-label{font-weight:500}
+.gantt-row.lvl1 .gantt-label{padding-left:14px;font-size:13px}
+.gantt-row.lvl2 .gantt-label{padding-left:28px;font-size:12.5px;color:var(--ink-soft)}
+.gantt-row.lvl3 .gantt-label{padding-left:42px;font-size:12px;color:var(--ink-faint)}
+.gantt-bar.k-project{height:22px;border-radius:11px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
+.gantt-bar.k-day{height:13px;border-radius:4px;min-width:13px}
+.gantt-nodate{font-size:11px;color:var(--ink-faint);font-style:italic}
 .botnav{display:none}
 @media(max-width:860px){
 .root{display:block;padding-bottom:74px}
@@ -988,8 +1224,9 @@ h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;margin:0;letter-spacing:-.
 .cal-chip,.cal-bar{font-size:9.5px;padding:1px 4px}
 .cal-dow span{font-size:9px;padding:6px 2px}
 .cal-month{font-size:17px;min-width:120px}
-.botnav{display:flex;position:fixed;bottom:0;left:0;right:0;background:rgba(251,248,240,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:6px 4px;z-index:40;justify-content:space-between}
-.bot-link{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;padding:6px 2px;color:var(--ink-faint);font-size:10px;font-family:'Spectral',serif}
+.botnav{display:flex;position:fixed;bottom:0;left:0;right:0;background:rgba(251,248,240,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:6px 4px;z-index:40;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.botnav::-webkit-scrollbar{display:none}
+.bot-link{flex:0 0 auto;min-width:62px;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;padding:6px 2px;color:var(--ink-faint);font-size:10px;font-family:'Spectral',serif}
 .bot-link.active{color:var(--seal)}
 .sec-head{flex-wrap:wrap}
 }
