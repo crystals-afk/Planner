@@ -64,6 +64,7 @@
   var LayoutGrid = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "3", width: "7", height: "7", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "14", y: "3", width: "7", height: "7", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "14", y: "14", width: "7", height: "7", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "3", y: "14", width: "7", height: "7", rx: "1" }));
   var Target = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "9" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "5" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "1" }));
   var CalendarRange = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "4", width: "18", height: "17", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M3 9h18M8 2v4M16 2v4M7 14h4M13 17h4" }));
+  var CalendarDays = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "4", width: "18", height: "17", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M3 9h18M8 2v4M16 2v4M7 13h.01M12 13h.01M17 13h.01M7 17h.01M12 17h.01M17 17h.01" }));
   var ListChecks = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M3 5l2 2 3-3M3 12l2 2 3-3M3 19l2 2 3-3M11 5h10M11 12h10M11 19h10" }));
   var GitBranch = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "3", x2: "6", y2: "15" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "6", r: "3" }), /* @__PURE__ */ React.createElement("circle", { cx: "6", cy: "18", r: "3" }), /* @__PURE__ */ React.createElement("path", { d: "M18 9a9 9 0 0 1-9 9" }));
   var Scale = (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M12 3v18M7 21h10M5 7h14M5 7l-3 6a3 3 0 0 0 6 0zM19 7l-3 6a3 3 0 0 0 6 0z" }));
@@ -238,6 +239,7 @@
     }, [persist]);
     const nav = [
       { id: "dashboard", label: "Today", icon: LayoutGrid },
+      { id: "calendar", label: "Calendar", icon: CalendarDays },
       { id: "quarters", label: "Quarters", icon: Target },
       { id: "weeks", label: "Weekly", icon: CalendarRange },
       { id: "days", label: "Daily", icon: ListChecks },
@@ -245,7 +247,7 @@
       { id: "decisions", label: "Decisions", icon: Scale },
       { id: "reflections", label: "Reflect", icon: NotebookPen }
     ];
-    return /* @__PURE__ */ React.createElement("div", { className: "root" }, /* @__PURE__ */ React.createElement("aside", { className: "sidebar" }, /* @__PURE__ */ React.createElement("div", { className: "brand" }, /* @__PURE__ */ React.createElement("span", { className: "seal" }, "\u5370"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "brand-title" }, "Studio"), /* @__PURE__ */ React.createElement("div", { className: "brand-sub" }, "planner & ledger"))), /* @__PURE__ */ React.createElement("nav", { className: "side-nav" }, nav.map((n) => /* @__PURE__ */ React.createElement("button", { key: n.id, className: "side-link" + (view === n.id ? " active" : ""), onClick: () => setView(n.id) }, /* @__PURE__ */ React.createElement(n.icon, { size: 17, strokeWidth: 1.8 }), /* @__PURE__ */ React.createElement("span", null, n.label)))), /* @__PURE__ */ React.createElement("div", { className: "side-foot" }, /* @__PURE__ */ React.createElement(SyncPill, { sync, onSync: () => load(false) }), /* @__PURE__ */ React.createElement("button", { className: "side-out", onClick: () => sb.auth.signOut(), title: "Sign out" }, /* @__PURE__ */ React.createElement(LogOut, { size: 16 })))), /* @__PURE__ */ React.createElement("main", { className: "main" }, /* @__PURE__ */ React.createElement("header", { className: "topbar" }, /* @__PURE__ */ React.createElement("div", { className: "topbar-title" }, nav.find((n) => n.id === view)?.label), /* @__PURE__ */ React.createElement("div", { className: "topbar-right" }, /* @__PURE__ */ React.createElement(SyncPill, { sync, onSync: () => load(false), compact: true }), /* @__PURE__ */ React.createElement("button", { className: "icon-btn", onClick: () => sb.auth.signOut() }, /* @__PURE__ */ React.createElement(LogOut, { size: 17 })))), /* @__PURE__ */ React.createElement("div", { className: "canvas" }, !loaded ? /* @__PURE__ */ React.createElement("div", { className: "empty" }, "Opening your studio\u2026") : /* @__PURE__ */ React.createElement(React.Fragment, null, view === "dashboard" && /* @__PURE__ */ React.createElement(Dashboard, { data, update, setView }), view === "quarters" && /* @__PURE__ */ React.createElement(Quarters, { data, update }), view === "weeks" && /* @__PURE__ */ React.createElement(Weeks, { data, update }), view === "days" && /* @__PURE__ */ React.createElement(Days, { data, update }), view === "gantt" && /* @__PURE__ */ React.createElement(Gantt, { data }), view === "decisions" && /* @__PURE__ */ React.createElement(Decisions, { data, update }), view === "reflections" && /* @__PURE__ */ React.createElement(Reflections, { data, update })))), /* @__PURE__ */ React.createElement("nav", { className: "botnav" }, nav.map((n) => /* @__PURE__ */ React.createElement("button", { key: n.id, className: "bot-link" + (view === n.id ? " active" : ""), onClick: () => setView(n.id) }, /* @__PURE__ */ React.createElement(n.icon, { size: 19, strokeWidth: 1.8 }), /* @__PURE__ */ React.createElement("span", null, n.label)))));
+    return /* @__PURE__ */ React.createElement("div", { className: "root" }, /* @__PURE__ */ React.createElement("aside", { className: "sidebar" }, /* @__PURE__ */ React.createElement("div", { className: "brand" }, /* @__PURE__ */ React.createElement("span", { className: "seal" }, "\u5370"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "brand-title" }, "Studio"), /* @__PURE__ */ React.createElement("div", { className: "brand-sub" }, "planner & ledger"))), /* @__PURE__ */ React.createElement("nav", { className: "side-nav" }, nav.map((n) => /* @__PURE__ */ React.createElement("button", { key: n.id, className: "side-link" + (view === n.id ? " active" : ""), onClick: () => setView(n.id) }, /* @__PURE__ */ React.createElement(n.icon, { size: 17, strokeWidth: 1.8 }), /* @__PURE__ */ React.createElement("span", null, n.label)))), /* @__PURE__ */ React.createElement("div", { className: "side-foot" }, /* @__PURE__ */ React.createElement(SyncPill, { sync, onSync: () => load(false) }), /* @__PURE__ */ React.createElement("button", { className: "side-out", onClick: () => sb.auth.signOut(), title: "Sign out" }, /* @__PURE__ */ React.createElement(LogOut, { size: 16 })))), /* @__PURE__ */ React.createElement("main", { className: "main" }, /* @__PURE__ */ React.createElement("header", { className: "topbar" }, /* @__PURE__ */ React.createElement("div", { className: "topbar-title" }, nav.find((n) => n.id === view)?.label), /* @__PURE__ */ React.createElement("div", { className: "topbar-right" }, /* @__PURE__ */ React.createElement(SyncPill, { sync, onSync: () => load(false), compact: true }), /* @__PURE__ */ React.createElement("button", { className: "icon-btn", onClick: () => sb.auth.signOut() }, /* @__PURE__ */ React.createElement(LogOut, { size: 17 })))), /* @__PURE__ */ React.createElement("div", { className: "canvas" }, !loaded ? /* @__PURE__ */ React.createElement("div", { className: "empty" }, "Opening your studio\u2026") : /* @__PURE__ */ React.createElement(React.Fragment, null, view === "dashboard" && /* @__PURE__ */ React.createElement(Dashboard, { data, update, setView }), view === "calendar" && /* @__PURE__ */ React.createElement(CalendarView, { data, update }), view === "quarters" && /* @__PURE__ */ React.createElement(Quarters, { data, update }), view === "weeks" && /* @__PURE__ */ React.createElement(Weeks, { data, update }), view === "days" && /* @__PURE__ */ React.createElement(Days, { data, update }), view === "gantt" && /* @__PURE__ */ React.createElement(Gantt, { data }), view === "decisions" && /* @__PURE__ */ React.createElement(Decisions, { data, update }), view === "reflections" && /* @__PURE__ */ React.createElement(Reflections, { data, update })))), /* @__PURE__ */ React.createElement("nav", { className: "botnav" }, nav.map((n) => /* @__PURE__ */ React.createElement("button", { key: n.id, className: "bot-link" + (view === n.id ? " active" : ""), onClick: () => setView(n.id) }, /* @__PURE__ */ React.createElement(n.icon, { size: 19, strokeWidth: 1.8 }), /* @__PURE__ */ React.createElement("span", null, n.label)))));
   }
   function SyncPill({ sync, onSync, compact }) {
     const text = sync === "saving" ? "Saving\u2026" : sync === "saved" ? "Saved" : sync === "loading" ? "Syncing\u2026" : "Synced";
@@ -322,6 +324,234 @@
     }))), /* @__PURE__ */ React.createElement("div", { className: "card" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Recent decisions" }), recentDec.length === 0 ? /* @__PURE__ */ React.createElement(Empty, null, "No decisions logged yet.") : /* @__PURE__ */ React.createElement("ul", { className: "mini-list" }, recentDec.map((d) => /* @__PURE__ */ React.createElement("li", { key: d.id }, /* @__PURE__ */ React.createElement(Scale, { size: 14, className: "muted-icon" }), /* @__PURE__ */ React.createElement("span", { className: "mini-title" }, d.title), /* @__PURE__ */ React.createElement("span", { className: "muted small" }, fmt(d.date)))))), /* @__PURE__ */ React.createElement("div", { className: "card" }, /* @__PURE__ */ React.createElement(SectionHead, { title: "Latest reflections" }), recentRef.length === 0 ? /* @__PURE__ */ React.createElement(Empty, null, "Nothing written yet.") : /* @__PURE__ */ React.createElement("ul", { className: "mini-list" }, recentRef.map((r) => /* @__PURE__ */ React.createElement("li", { key: r.id }, /* @__PURE__ */ React.createElement(NotebookPen, { size: 14, className: "muted-icon" }), /* @__PURE__ */ React.createElement("span", { className: "mini-title" }, r.title || "Reflection"), /* @__PURE__ */ React.createElement("span", { className: "muted small" }, fmt(r.date))))))));
   }
   var QCOLORS = ["#9B3322", "#7C9070", "#B08D4F", "#4A6C8C", "#7A5C84", "#3F6F63"];
+  var DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  function addDaysISO(iso, n) {
+    const d = /* @__PURE__ */ new Date(iso + "T00:00:00");
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+  function monthStart(iso) {
+    const d = /* @__PURE__ */ new Date(iso + "T00:00:00");
+    d.setDate(1);
+    return d.toISOString().slice(0, 10);
+  }
+  function gridStart(monthFirst) {
+    const d = /* @__PURE__ */ new Date(monthFirst + "T00:00:00");
+    const back = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - back);
+    return d.toISOString().slice(0, 10);
+  }
+  function weekStartOf(iso) {
+    const d = /* @__PURE__ */ new Date(iso + "T00:00:00");
+    const back = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - back);
+    return d.toISOString().slice(0, 10);
+  }
+  function CalendarView({ data, update }) {
+    const [mode, setMode] = useState("month");
+    const [cursor, setCursor] = useState(todayISO());
+    const [editing, setEditing] = useState(null);
+    const [addFor, setAddFor] = useState(null);
+    const today = todayISO();
+    const dragRef = useRef(null);
+    const ghostRef = useRef(null);
+    const justDragged = useRef(false);
+    const [dragLabel, setDragLabel] = useState(null);
+    const [dropDate, setDropDate] = useState(null);
+    const moveGhost = (x, y) => {
+      if (ghostRef.current) {
+        ghostRef.current.style.left = x + "px";
+        ghostRef.current.style.top = y + "px";
+      }
+    };
+    const cellDateAt = (x, y) => {
+      const el = document.elementFromPoint(x, y);
+      const c = el && el.closest("[data-date]");
+      return c ? c.getAttribute("data-date") : null;
+    };
+    const onChipDown = (e, task) => {
+      if (e.button === 1 || e.button === 2) return;
+      dragRef.current = { id: task.id, label: task.title || "Untitled", sx: e.clientX, sy: e.clientY, active: false };
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch (_) {
+      }
+    };
+    const onChipMove = (e) => {
+      const d = dragRef.current;
+      if (!d) return;
+      const dx = e.clientX - d.sx, dy = e.clientY - d.sy;
+      if (!d.active && Math.hypot(dx, dy) > 6) {
+        d.active = true;
+        setDragLabel(d.label);
+        document.body.style.userSelect = "none";
+      }
+      if (d.active) {
+        e.preventDefault();
+        moveGhost(e.clientX, e.clientY);
+        setDropDate(cellDateAt(e.clientX, e.clientY));
+      }
+    };
+    const onChipUp = (e, task) => {
+      const d = dragRef.current;
+      dragRef.current = null;
+      document.body.style.userSelect = "";
+      if (d && d.active) {
+        const target = cellDateAt(e.clientX, e.clientY);
+        setDragLabel(null);
+        setDropDate(null);
+        justDragged.current = true;
+        setTimeout(() => {
+          justDragged.current = false;
+        }, 350);
+        if (target && target !== task.date) {
+          update((dt) => {
+            const t = dt.days.find((x) => x.id === task.id);
+            if (t) t.date = target;
+            return dt;
+          });
+        }
+      } else {
+        setEditing({ kind: "day", item: task });
+      }
+    };
+    const DayChip = ({ d, full }) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        className: (full ? "wk-task" : "cal-chip") + " s-" + d.status,
+        onPointerDown: (e) => onChipDown(e, d),
+        onPointerMove: onChipMove,
+        onPointerUp: (e) => onChipUp(e, d),
+        onClick: (e) => {
+          e.stopPropagation();
+        },
+        title: d.title
+      },
+      full && /* @__PURE__ */ React.createElement("span", { className: "wk-status", onPointerDown: (e) => e.stopPropagation(), onClick: (e) => {
+        e.stopPropagation();
+        update((dt) => {
+          const t = dt.days.find((x) => x.id === d.id);
+          const order = ["todo", "doing", "done"];
+          t.status = order[(order.indexOf(t.status) + 1) % 3];
+          return dt;
+        });
+      } }, statusMeta(d.status).icon({ size: 15, strokeWidth: 2 })),
+      !full && /* @__PURE__ */ React.createElement("span", { className: "cal-chip-dot" }),
+      /* @__PURE__ */ React.createElement("span", { className: "cal-chip-label" }, d.title || "Untitled"),
+      full && d.priority === "high" && /* @__PURE__ */ React.createElement(Tag, { tone: "seal" }, "priority")
+    );
+    const shift = (n) => {
+      const d = /* @__PURE__ */ new Date(cursor + "T00:00:00");
+      if (mode === "month") d.setMonth(d.getMonth() + n);
+      else d.setDate(d.getDate() + n * 7);
+      setCursor(d.toISOString().slice(0, 10));
+    };
+    const save = (kind, item) => {
+      update((dt) => {
+        const arr = kind === "quarter" ? dt.quarters : kind === "week" ? dt.weeks : dt.days;
+        const i = arr.findIndex((x) => x.id === item.id);
+        if (i >= 0) arr[i] = item;
+        else arr.push(item);
+        return dt;
+      });
+      setEditing(null);
+    };
+    const del = (kind, id) => update((dt) => {
+      if (kind === "quarter") {
+        dt.quarters = dt.quarters.filter((x) => x.id !== id);
+        dt.weeks.forEach((w) => {
+          if (w.quarterId === id) w.quarterId = null;
+        });
+      } else if (kind === "week") {
+        dt.weeks = dt.weeks.filter((x) => x.id !== id);
+        dt.days.forEach((d) => {
+          if (d.weekId === id) d.weekId = null;
+        });
+      } else dt.days = dt.days.filter((x) => x.id !== id);
+      return dt;
+    });
+    const newItem = (kind, date) => {
+      if (kind === "quarter") return { id: uid(), title: "", description: "", startDate: date, endDate: addDaysISO(date, 90), status: "todo", color: QCOLORS[data.quarters.length % QCOLORS.length] };
+      if (kind === "week") return { id: uid(), title: "", quarterId: data.quarters[0]?.id || null, startDate: date, endDate: addDaysISO(date, 6), status: "todo", notes: "" };
+      return { id: uid(), title: "", weekId: null, date, status: "todo", priority: "normal" };
+    };
+    const colOf = (iso, row) => Math.max(0, Math.min(6, daysBetween(row[0], iso)));
+    const openAdd = (iso) => {
+      if (justDragged.current) return;
+      setAddFor(iso);
+    };
+    const renderMonth = () => {
+      const mStart = monthStart(cursor);
+      const cursorMonth = (/* @__PURE__ */ new Date(mStart + "T00:00:00")).getMonth();
+      const start = gridStart(mStart);
+      const weeks = [];
+      for (let wk = 0; wk < 6; wk++) {
+        const r = [];
+        for (let i = 0; i < 7; i++) r.push(addDaysISO(start, wk * 7 + i));
+        weeks.push(r);
+      }
+      const gridEnd = addDaysISO(start, 41);
+      const monthQuarters = data.quarters.filter((q) => q.startDate && q.endDate && q.startDate <= gridEnd && q.endDate >= start);
+      return /* @__PURE__ */ React.createElement(React.Fragment, null, monthQuarters.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "cal-quarters" }, monthQuarters.map((q) => /* @__PURE__ */ React.createElement("button", { key: q.id, className: "cal-qchip", style: { borderColor: q.color, color: q.color }, onClick: () => setEditing({ kind: "quarter", item: q }) }, /* @__PURE__ */ React.createElement("span", { className: "dot", style: { background: q.color } }), q.title || "Untitled goal", /* @__PURE__ */ React.createElement("span", { className: "cal-qrange" }, fmt(q.startDate), "\u2013", fmt(q.endDate))))), /* @__PURE__ */ React.createElement("div", { className: "cal-grid" }, /* @__PURE__ */ React.createElement("div", { className: "cal-dow" }, DOW.map((d) => /* @__PURE__ */ React.createElement("span", { key: d }, d))), weeks.map((row, wi) => {
+        const ws = row[0], we = row[6];
+        const wk = data.weeks.filter((w) => w.startDate && w.endDate && w.startDate <= we && w.endDate >= ws);
+        return /* @__PURE__ */ React.createElement("div", { key: wi, className: "cal-week" }, /* @__PURE__ */ React.createElement("div", { className: "cal-bars" }, wk.slice(0, 3).map((w) => {
+          const c0 = colOf(w.startDate < ws ? ws : w.startDate, row);
+          const c1 = colOf(w.endDate > we ? we : w.endDate, row);
+          const q = data.quarters.find((x) => x.id === w.quarterId);
+          return /* @__PURE__ */ React.createElement("div", { key: w.id, className: "cal-bar-lane" }, /* @__PURE__ */ React.createElement("button", { className: "cal-bar" + (w.status === "done" ? " done" : ""), style: { gridColumn: `${c0 + 1} / ${c1 + 2}`, background: q ? q.color : "var(--ink-faint)" }, onClick: () => setEditing({ kind: "week", item: w }), title: w.title }, w.startDate < ws ? "\u2026 " : "", w.title || "Untitled"));
+        }), wk.length > 3 && /* @__PURE__ */ React.createElement("div", { className: "cal-bar-more" }, "+", wk.length - 3, " more weekly")), /* @__PURE__ */ React.createElement("div", { className: "cal-days" }, row.map((iso) => {
+          const inMonth = (/* @__PURE__ */ new Date(iso + "T00:00:00")).getMonth() === cursorMonth;
+          const dayTasks = data.days.filter((d) => d.date === iso);
+          return /* @__PURE__ */ React.createElement("div", { key: iso, "data-date": iso, className: "cal-cell" + (inMonth ? "" : " other") + (iso === today ? " today" : "") + (iso === dropDate ? " drop" : ""), onClick: () => openAdd(iso) }, /* @__PURE__ */ React.createElement("div", { className: "cal-num" }, (/* @__PURE__ */ new Date(iso + "T00:00:00")).getDate()), /* @__PURE__ */ React.createElement("div", { className: "cal-chips" }, dayTasks.slice(0, 3).map((d) => /* @__PURE__ */ React.createElement(DayChip, { key: d.id, d })), dayTasks.length > 3 && /* @__PURE__ */ React.createElement("div", { className: "cal-chip-more" }, "+", dayTasks.length - 3)));
+        })));
+      })));
+    };
+    const renderWeek = () => {
+      const ws = weekStartOf(cursor);
+      const days = [];
+      for (let i = 0; i < 7; i++) days.push(addDaysISO(ws, i));
+      const we = days[6];
+      const wk = data.weeks.filter((w) => w.startDate && w.endDate && w.startDate <= we && w.endDate >= ws);
+      return /* @__PURE__ */ React.createElement("div", { className: "wk-wrap" }, wk.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wk-weeklies" }, wk.map((w) => {
+        const q = data.quarters.find((x) => x.id === w.quarterId);
+        return /* @__PURE__ */ React.createElement("button", { key: w.id, className: "wk-weekly" + (w.status === "done" ? " done" : ""), style: { borderLeftColor: q ? q.color : "var(--ink-faint)" }, onClick: () => setEditing({ kind: "week", item: w }) }, /* @__PURE__ */ React.createElement(StatusDot, { status: w.status }), w.title || "Untitled", /* @__PURE__ */ React.createElement("span", { className: "wk-weekly-range" }, fmt(w.startDate), "\u2013", fmt(w.endDate)));
+      })), /* @__PURE__ */ React.createElement("div", { className: "wk-days" }, days.map((iso) => {
+        const dt = /* @__PURE__ */ new Date(iso + "T00:00:00");
+        const dayTasks = data.days.filter((d) => d.date === iso);
+        return /* @__PURE__ */ React.createElement("div", { key: iso, "data-date": iso, className: "wk-day" + (iso === today ? " today" : "") + (iso === dropDate ? " drop" : "") }, /* @__PURE__ */ React.createElement("div", { className: "wk-day-head" }, /* @__PURE__ */ React.createElement("div", { className: "wk-day-name" }, dt.toLocaleDateString(void 0, { weekday: "short" })), /* @__PURE__ */ React.createElement("div", { className: "wk-day-num" + (iso === today ? " today" : "") }, dt.getDate()), /* @__PURE__ */ React.createElement("button", { className: "wk-add", onClick: () => openAdd(iso), title: "Add" }, /* @__PURE__ */ React.createElement(Plus, { size: 15 }))), /* @__PURE__ */ React.createElement("div", { className: "wk-tasks" }, dayTasks.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "wk-empty", onClick: () => openAdd(iso) }, "\u2014") : dayTasks.map((d) => /* @__PURE__ */ React.createElement(DayChip, { key: d.id, d, full: true }))));
+      })));
+    };
+    const label = mode === "month" ? (/* @__PURE__ */ new Date(monthStart(cursor) + "T00:00:00")).toLocaleDateString(void 0, { month: "long", year: "numeric" }) : (() => {
+      const ws = weekStartOf(cursor);
+      const we = addDaysISO(ws, 6);
+      return `${fmt(ws)} \u2013 ${fmt(we)}`;
+    })();
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(SectionHead, { title: "Calendar", subtitle: "Tap a day to add. Tap an item to edit. Drag a daily task to move it to another day." }), /* @__PURE__ */ React.createElement("div", { className: "cal-toolbar" }, /* @__PURE__ */ React.createElement("div", { className: "seg" }, /* @__PURE__ */ React.createElement("button", { className: "seg-btn" + (mode === "month" ? " on" : ""), onClick: () => setMode("month") }, "Month"), /* @__PURE__ */ React.createElement("button", { className: "seg-btn" + (mode === "week" ? " on" : ""), onClick: () => setMode("week") }, "Week")), /* @__PURE__ */ React.createElement("button", { className: "icon-btn", onClick: () => shift(-1) }, /* @__PURE__ */ React.createElement(ChevronRight, { size: 18, style: { transform: "rotate(180deg)" } })), /* @__PURE__ */ React.createElement("div", { className: "cal-month" }, label), /* @__PURE__ */ React.createElement("button", { className: "icon-btn", onClick: () => shift(1) }, /* @__PURE__ */ React.createElement(ChevronRight, { size: 18 })), /* @__PURE__ */ React.createElement("button", { className: "btn ghost sm cal-today", onClick: () => setCursor(todayISO()) }, "Today")), mode === "month" ? renderMonth() : renderWeek(), addFor && /* @__PURE__ */ React.createElement(Modal, { title: `Add for ${fmtLong(addFor)}`, onClose: () => setAddFor(null) }, /* @__PURE__ */ React.createElement("div", { className: "add-choices" }, /* @__PURE__ */ React.createElement("button", { className: "add-choice", onClick: () => {
+      setEditing({ kind: "day", item: newItem("day", addFor) });
+      setAddFor(null);
+    } }, /* @__PURE__ */ React.createElement(ListChecks, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Daily task"), /* @__PURE__ */ React.createElement("span", null, "On this day"))), /* @__PURE__ */ React.createElement("button", { className: "add-choice", onClick: () => {
+      setEditing({ kind: "week", item: newItem("week", addFor) });
+      setAddFor(null);
+    } }, /* @__PURE__ */ React.createElement(CalendarRange, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Weekly task"), /* @__PURE__ */ React.createElement("span", null, "Starts this day, runs a week"))), /* @__PURE__ */ React.createElement("button", { className: "add-choice", onClick: () => {
+      setEditing({ kind: "quarter", item: newItem("quarter", addFor) });
+      setAddFor(null);
+    } }, /* @__PURE__ */ React.createElement(Target, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", null, "Quarterly goal"), /* @__PURE__ */ React.createElement("span", null, "Starts this day, ~3 months"))))), editing && /* @__PURE__ */ React.createElement(CalEditor, { data, editing, setEditing, onSave: save, onDelete: del }), /* @__PURE__ */ React.createElement("div", { ref: ghostRef, className: "drag-ghost", style: { display: dragLabel ? "block" : "none" } }, dragLabel));
+  }
+  function StatusDot({ status }) {
+    return /* @__PURE__ */ React.createElement("span", { className: "sd s-" + status });
+  }
+  function CalEditor({ data, editing, setEditing, onSave, onDelete }) {
+    const { kind } = editing;
+    const [item, setItem] = useState(editing.item);
+    const set = (k, v) => setItem({ ...item, [k]: v });
+    const titleOk = kind === "quarter" || kind === "week" ? item.title.trim() : item.title.trim();
+    const heading = kind === "quarter" ? "Quarterly goal" : kind === "week" ? "Weekly task" : "Daily task";
+    return /* @__PURE__ */ React.createElement(Modal, { title: heading, onClose: () => setEditing(null) }, /* @__PURE__ */ React.createElement("div", { className: "form" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, kind === "quarter" ? "Goal" : "Task"), /* @__PURE__ */ React.createElement("input", { value: item.title, onChange: (e) => set("title", e.target.value), autoFocus: true, placeholder: kind === "day" ? "e.g. Image PS19/E4 slices" : kind === "week" ? "e.g. Finish AAV titration" : "e.g. Submit manuscript" })), kind === "day" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Date"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.date, onChange: (e) => set("date", e.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Serves weekly task"), /* @__PURE__ */ React.createElement("select", { value: item.weekId || "", onChange: (e) => set("weekId", e.target.value || null) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 none \u2014"), data.weeks.map((w) => /* @__PURE__ */ React.createElement("option", { key: w.id, value: w.id }, w.title || "Untitled")))), /* @__PURE__ */ React.createElement("label", { className: "field checkbox" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: item.priority === "high", onChange: (e) => set("priority", e.target.checked ? "high" : "normal") }), /* @__PURE__ */ React.createElement("span", null, "Mark as priority"))), kind === "week" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Rolls up to"), /* @__PURE__ */ React.createElement("select", { value: item.quarterId || "", onChange: (e) => set("quarterId", e.target.value || null) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 none \u2014"), data.quarters.map((q) => /* @__PURE__ */ React.createElement("option", { key: q.id, value: q.id }, q.title || "Untitled")))), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Start"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.startDate, onChange: (e) => set("startDate", e.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "End"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.endDate, onChange: (e) => set("endDate", e.target.value) })))), kind === "quarter" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Description"), /* @__PURE__ */ React.createElement("textarea", { rows: 2, value: item.description, onChange: (e) => set("description", e.target.value) })), /* @__PURE__ */ React.createElement("div", { className: "field-row" }, /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Start"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.startDate, onChange: (e) => set("startDate", e.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "End"), /* @__PURE__ */ React.createElement("input", { type: "date", value: item.endDate, onChange: (e) => set("endDate", e.target.value) }))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Colour"), /* @__PURE__ */ React.createElement("div", { className: "swatches" }, QCOLORS.map((c) => /* @__PURE__ */ React.createElement("button", { key: c, className: "swatch" + (item.color === c ? " on" : ""), style: { background: c }, onClick: () => set("color", c) }))))), /* @__PURE__ */ React.createElement("div", { className: "field" }, /* @__PURE__ */ React.createElement("span", null, "Status"), /* @__PURE__ */ React.createElement("div", { className: "mood-row" }, STATUSES.map((s) => /* @__PURE__ */ React.createElement("button", { key: s.id, className: "mood-chip" + (item.status === s.id ? " on" : ""), onClick: () => set("status", s.id) }, s.label))))), /* @__PURE__ */ React.createElement("div", { className: "modal-actions" }, data[kind === "quarter" ? "quarters" : kind === "week" ? "weeks" : "days"].some((x) => x.id === item.id) && /* @__PURE__ */ React.createElement("button", { className: "btn ghost danger-text", onClick: () => {
+      onDelete(kind, item.id);
+      setEditing(null);
+    } }, "Delete"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }), /* @__PURE__ */ React.createElement("button", { className: "btn ghost", onClick: () => setEditing(null) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: () => onSave(kind, item), disabled: !titleOk }, "Save")));
+  }
   function Quarters({ data, update }) {
     const [editing, setEditing] = useState(null);
     const blank = () => ({ id: uid(), title: "", description: "", startDate: todayISO(), endDate: "", status: "todo", color: QCOLORS[data.quarters.length % QCOLORS.length] });
@@ -669,6 +899,79 @@ h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;margin:0;letter-spacing:-.
 .setup-card{max-width:420px}
 .setup-card .auth-sub{margin-bottom:20px}
 .setup-foot{font-size:12.5px;color:var(--ink-faint);line-height:1.6;margin:16px 0 0;text-align:left}
+/* calendar */
+.cal-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.cal-month{font-family:'Fraunces',serif;font-size:20px;min-width:150px;text-align:center}
+.cal-today{margin-left:auto}
+.cal-quarters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.cal-qchip{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:20px;border:1px solid var(--line);background:var(--card);font-family:'Spectral',serif;font-size:13px}
+.cal-qrange{font-size:11px;opacity:.7}
+.cal-grid{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--card);box-shadow:var(--shadow)}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);background:var(--paper-2)}
+.cal-dow span{padding:8px 6px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);text-align:center}
+.cal-week{border-top:1px solid var(--line)}
+.cal-bars{display:flex;flex-direction:column;gap:2px;padding:3px 3px 0}
+.cal-bar-lane{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-bar{grid-row:1;border:none;border-radius:5px;padding:2px 7px;font-size:11px;color:#fff;font-family:'Spectral',serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;opacity:.92;min-width:0;cursor:pointer}
+.cal-bar.done{opacity:.5;text-decoration:line-through}
+.cal-bar-more{font-size:10px;color:var(--ink-faint);padding:0 4px}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal-cell{min-height:74px;border-right:1px solid var(--line);padding:4px 5px 6px;cursor:pointer;display:flex;flex-direction:column;gap:3px;transition:background .12s}
+.cal-cell:last-child{border-right:none}
+.cal-cell:hover{background:rgba(155,51,34,.04)}
+.cal-cell.other{background:rgba(0,0,0,.015)}
+.cal-cell.other .cal-num{color:var(--ink-faint);opacity:.5}
+.cal-cell.today .cal-num{background:var(--seal);color:#fff;border-radius:50%;width:22px;height:22px;display:grid;place-items:center}
+.cal-num{font-size:12.5px;color:var(--ink-soft);font-weight:500}
+.cal-chips{display:flex;flex-direction:column;gap:2px;min-width:0}
+.cal-chip{display:flex;align-items:center;gap:4px;border:none;background:var(--paper-2);border-radius:5px;padding:2px 5px;font-size:11px;font-family:'Spectral',serif;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;min-width:0;cursor:pointer}
+.cal-chip-dot{width:6px;height:6px;border-radius:50%;background:var(--ink-faint);flex-shrink:0}
+.cal-chip.s-doing .cal-chip-dot{background:var(--gold)}
+.cal-chip.s-done{color:var(--ink-faint);text-decoration:line-through}
+.cal-chip.s-done .cal-chip-dot{background:var(--celadon)}
+.cal-chip-more{font-size:10px;color:var(--ink-faint);padding-left:5px}
+.add-choices{display:flex;flex-direction:column;gap:10px}
+.add-choice{display:flex;align-items:center;gap:13px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card);text-align:left;color:var(--ink);transition:.15s}
+.add-choice:hover{border-color:var(--seal);background:rgba(155,51,34,.04)}
+.add-choice div{display:flex;flex-direction:column}
+.add-choice strong{font-size:15px;font-weight:500}
+.add-choice span{font-size:12.5px;color:var(--ink-faint)}
+.danger-text{color:var(--seal)}
+/* segmented month/week toggle */
+.seg{display:inline-flex;background:var(--paper-2);border-radius:9px;padding:3px;gap:2px}
+.seg-btn{border:none;background:none;padding:6px 13px;border-radius:7px;font-family:'Spectral',serif;font-size:13.5px;color:var(--ink-soft)}
+.seg-btn.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(34,31,24,.12)}
+/* drop highlight */
+.cal-cell.drop,.wk-day.drop{background:rgba(155,51,34,.1);box-shadow:inset 0 0 0 2px var(--seal)}
+.cal-chip-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.cal-chip{touch-action:none}
+/* drag ghost */
+.drag-ghost{position:fixed;z-index:200;pointer-events:none;transform:translate(8px,8px);background:var(--seal);color:#fff;font-family:'Spectral',serif;font-size:12px;padding:5px 10px;border-radius:7px;box-shadow:0 8px 20px rgba(34,31,24,.3);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* status dot */
+.sd{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--ink-faint)}
+.sd.s-doing{background:var(--gold)}
+.sd.s-done{background:var(--celadon)}
+/* week view */
+.wk-weeklies{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+.wk-weekly{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-left:4px solid var(--ink-faint);border-radius:10px;background:var(--card);padding:10px 13px;font-family:'Spectral',serif;font-size:14.5px;color:var(--ink);box-shadow:var(--shadow);text-align:left}
+.wk-weekly.done{color:var(--ink-faint);text-decoration:line-through}
+.wk-weekly-range{margin-left:auto;font-size:12px;color:var(--ink-faint)}
+.wk-days{display:flex;flex-direction:column;gap:8px}
+.wk-day{border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+.wk-day.today{border-color:var(--seal)}
+.wk-day-head{display:flex;align-items:center;gap:10px;padding:9px 13px;background:var(--paper-2)}
+.wk-day-name{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint)}
+.wk-day-num{font-family:'Fraunces',serif;font-size:17px}
+.wk-day-num.today{background:var(--seal);color:#fff;border-radius:50%;width:26px;height:26px;display:grid;place-items:center;font-size:14px}
+.wk-add{margin-left:auto;display:grid;place-items:center;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink-faint)}
+.wk-add:hover{color:var(--seal);border-color:var(--seal)}
+.wk-tasks{display:flex;flex-direction:column;gap:6px;padding:10px 13px}
+.wk-task{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:9px;background:var(--card);padding:8px 11px;font-family:'Spectral',serif;font-size:14.5px;color:var(--ink);text-align:left;touch-action:none}
+.wk-task.s-done{color:var(--ink-faint);text-decoration:line-through}
+.wk-status{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);flex-shrink:0;color:var(--ink-faint)}
+.wk-task.s-doing .wk-status{color:var(--gold);border-color:var(--gold)}
+.wk-task.s-done .wk-status{color:#fff;background:var(--celadon);border-color:var(--celadon)}
+.wk-empty{color:var(--ink-faint);font-size:13px;cursor:pointer;padding:2px}
 .botnav{display:none}
 @media(max-width:860px){
 .root{display:block;padding-bottom:74px}
@@ -680,6 +983,11 @@ h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;margin:0;letter-spacing:-.
 .dash-grid{grid-template-columns:1fr}.span-2{grid-column:span 1}
 .dash-hero h1{font-size:30px}.sec-head h2{font-size:23px}
 .reflections{columns:1}
+.cal-cell{min-height:58px;padding:3px 3px 5px}
+.cal-num{font-size:11px}
+.cal-chip,.cal-bar{font-size:9.5px;padding:1px 4px}
+.cal-dow span{font-size:9px;padding:6px 2px}
+.cal-month{font-size:17px;min-width:120px}
 .botnav{display:flex;position:fixed;bottom:0;left:0;right:0;background:rgba(251,248,240,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:6px 4px;z-index:40;justify-content:space-between}
 .bot-link{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;padding:6px 2px;color:var(--ink-faint);font-size:10px;font-family:'Spectral',serif}
 .bot-link.active{color:var(--seal)}
